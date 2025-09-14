@@ -36,6 +36,7 @@ registrationForm.addEventListener("submit", async (e) => {
         showState("admin");
     } else {
         showState("waiting");
+        
     }
   } catch (err) {
     registrationError.textContent = err.message;
@@ -46,8 +47,15 @@ registrationForm.addEventListener("submit", async (e) => {
 // Функция для переключения экранов
 function showState(state) {
   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
+  
   const el = document.getElementById(`state-${state}`);
   if (el) el.classList.remove("hidden");
+
+  const nicknameElements = el.querySelectorAll("[id$='nickname']");
+  nicknameElements.forEach(elm => {
+    elm.textContent = appState.userNickname;
+  });
+  
   appState.currentState = state;
 }
 
