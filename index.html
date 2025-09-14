@@ -32,7 +32,7 @@
         </div>
 
 
-        <!-- 2. ЭКРАН ОЖИДАНИЯ -->
+        2. ЭКРАН ОЖИДАНИЯ
         <div id="state-waiting" class="state hidden">
             <div class="container">
                 <div class="icon">⏳</div>
@@ -118,7 +118,7 @@
         </div>
 
         <!-- 7. ЭКРАН АДМИН-ПАНЕЛИ -->
-        <div id="state-admin" class="state hidden">
+        <!-- <div id="state-admin" class="state hidden">
             <div class="container">
                 <div class="card">
                     
@@ -155,6 +155,60 @@
                         <button onclick="adminRestartGame()" class="btn btn-danger">
                             Начать заново
                         </button>
+                    </div>
+
+                    <div class="admin-notification" id="admin-notification"></div>
+                    
+                    <button onclick="showState('waiting')" class="btn btn-outline">
+                        ← Назад к игре
+                    </button>
+                </div>
+            </div>
+        </div> -->
+        
+        <!-- 7. ЭКРАН АДМИН-ПАНЕЛИ -->
+        <div id="state-admin" class="state hidden">
+            <div class="container">
+                <div class="card">
+                    
+                    <h1>Панель администратора</h1>
+
+                    <!-- ----------------- Статистика ----------------- -->
+                    <div class="admin-stats">
+                        <div class="stat-card">
+                            <h3>Статус игры</h3>
+                            <p id="admin-game-status">Не начата</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Текущий вопрос</h3>
+                            <p id="admin-current-question">0/5</p>
+                        </div>
+                    </div>
+
+                    <!-- ----------------- Действия User ----------------- -->
+                    <h2>User Management</h2>
+                    <div class="admin-actions">
+                        <button onclick="adminListUsers()" class="btn btn-outline">Список пользователей</button>
+                        <button onclick="adminDeleteUserPrompt()" class="btn btn-danger">Удалить пользователя</button>
+                    </div>
+
+                    <!-- ----------------- Действия Event ----------------- -->
+                    <h2>Event Management</h2>
+                    <div class="admin-actions">
+                        <button onclick="adminCreateEventPrompt()" class="btn btn-success">Создать событие</button>
+                        <button onclick="adminNextEventPhasePrompt()" class="btn btn-primary">Следующая фаза события</button>
+                        <button onclick="adminListEvents()" class="btn btn-outline">Список событий</button>
+                        <button onclick="adminGetEventStatusPrompt()" class="btn btn-info">Статус события</button>
+                    </div>
+
+                    <!-- ----------------- Действия Quiz ----------------- -->
+                    <h2>Quiz Management</h2>
+                    <div class="admin-actions">
+                        <button onclick="adminListQuizzes()" class="btn btn-outline">Список квизов</button>
+                        <button onclick="adminCreateQuizPrompt()" class="btn btn-success">Создать квиз</button>
+                        <button onclick="adminListQuestionsPrompt()" class="btn btn-primary">Список вопросов</button>
+                        <button onclick="adminCreateQuestionPrompt()" class="btn btn-info">Создать вопрос</button>
+                        <button onclick="adminGetCurrentQuestionPrompt()" class="btn btn-warning">Текущий вопрос</button>
                     </div>
 
                     <div class="admin-notification" id="admin-notification"></div>
