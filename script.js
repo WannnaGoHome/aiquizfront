@@ -16,6 +16,31 @@ const registrationSuccess = document.getElementById("registration-success");
 const registrationError = document.getElementById("registration-error");
 const registeredNickname = document.getElementById("registered-nickname");
 
+// registrationForm.addEventListener("submit", async (e) => {
+//   e.preventDefault();
+//   const nickname = nicknameInput.value.trim();
+//   if (!nickname) return;
+
+//   try {
+//     registrationError.classList.add("hidden");
+//     await ApiClient.registerUser(telegramId, nickname);
+//     appState.userId = telegramId;
+//     appState.userNickname = nickname;
+
+//     const isAdmin = await ApiClient.checkAdmin(telegramId);
+//     if (isAdmin.is_admin) {
+//         showState("admin");
+//         updateAdminStats();
+//     } else {
+//         showState("waiting");
+//     }
+
+//   } catch (err) {
+//     registrationError.textContent = err.message;
+//     registrationError.classList.remove("hidden");
+//   }
+// });
+
 registrationForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const nickname = nicknameInput.value.trim();
@@ -23,6 +48,24 @@ registrationForm.addEventListener("submit", async (e) => {
 
   try {
     registrationError.classList.add("hidden");
+
+    const existingUser = await ApiClient.getUser(telegramId);
+
+    if (existingUser) {
+        appState.userId = telegramId;
+        appState.userNickname = existingUser.nickname || nickname;
+
+        const isAdmin = await ApiClient.checkAdmin(telegramId);
+        if (isAdmin.is_admin) {
+            showState("admin");
+            updateAdminStats();
+        } else {
+            showState("waiting");
+        }
+        return;
+    }
+
+    // Если пользователь не найден, вызываем регистрацию
     await ApiClient.registerUser(telegramId, nickname);
     appState.userId = telegramId;
     appState.userNickname = nickname;
@@ -42,6 +85,7 @@ registrationForm.addEventListener("submit", async (e) => {
 });
 
 
+
 // Функция для переключения экранов
 function showState(state) {
   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
@@ -57,31 +101,6 @@ function showState(state) {
   appState.currentState = state;
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
-    if (!telegramId) return;
-
-    if(ADMIN_IDS.includes(telegramId)) {
-        try {
-            const user = await ApiClient.getUser(telegramId);
-            appState.userId = telegramId;
-            appState.userNickname = user.nickname || telegramUser?.username || "";
-
-            const isAdmin = await ApiClient.checkAdmin(telegramId);
-            if (isAdmin.is_admin) {
-                showState("admin");
-                updateAdminStats();
-            } else {
-                showState("waiting");
-            }
-
-        } catch (err) {
-            console.error("Ошибка автологина админа:", err);
-            showState("registration"); 
-        }
-    } else{
-        showState("registration"); 
-    }
-});
 
 // Выход/смена никнейма
 function logout() {
