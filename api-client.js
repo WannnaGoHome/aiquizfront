@@ -49,7 +49,7 @@ const ApiClient = {
   },
 
   // Добавьте обработку не-JSON ответов
-getUser: async (telegramId) => {
+getUser: async (telegram_id) => {
 try {
 const res = await fetch(`${API_BASE}/users/${telegramId}`);
 
