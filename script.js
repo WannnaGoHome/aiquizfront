@@ -302,3 +302,107 @@ async function adminGetCurrentQuestionPrompt() {
     document.getElementById("admin-notification").textContent = "Ошибка получения текущего вопроса: " + e.message;
   }
 }
+
+// ----------------- Дефолтные вопросы для теста -----------------
+const defaultQuestions = [
+  "Что такое искусственный интеллект?",
+  "Назовите основные виды машинного обучения.",
+  "Для чего используют нейронные сети?",
+  "Что такое генеративные модели?",
+  "Как ИИ меняет современные профессии?"
+];
+
+let gameTimer = null;
+
+// ----------------- Функция запуска игры для пользователей -----------------
+async function startGame(eventId) {
+  try {
+    // Обновляем статус игры
+    const status = await ApiClient.getEventStatus(eventId);
+
+    if (status.game_status !== "started") {
+      document.getElementById("admin-notification").textContent = "Статус игры не started, ожидаем...";
+      return;
+    }
+
+    showState("game");
+    let questionIndex = 0;
+    const totalQuestions = defaultQuestions.length;
+
+    function nextQuestion() {
+      if (questionIndex >= totalQuestions) {
+        clearInterval(gameTimer);
+        finishGamePhase(eventId);
+        return;
+      }
+
+      const questionText = defaultQuestions[questionIndex];
+      document.getElementById("question-text").textContent = questionText;
+      document.getElementById("current-q").textContent = questionIndex + 1;
+      document.getElementById("total-qs").textContent = totalQuestions;
+
+      // Таймер 10 секунд на вопрос
+      let timer = 10;
+      document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
+      const interval = setInterval(() => {
+        timer--;
+        document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
+        if (timer <= 0) clearInterval(interval);
+      }, 1000);
+
+      questionIndex++;
+      gameTimer = setTimeout(nextQuestion, 10000);
+    }
+
+    nextQuestion();
+
+  } catch (e) {
+    console.error("Ошибка запуска игры:", e);
+    document.getElementById("admin-notification").textContent = "Ошибка запуска игры: " + e.message;
+  }
+}
+
+// ----------------- Функция перехода к следующей фазе события -----------------
+async function finishGamePhase(eventId) {
+  try {
+    const phase = await ApiClient.getNextEventPhase(eventId, telegramId);
+    console.log("Следующая фаза события:", phase);
+
+    if (phase.game_status === "finished") {
+      showState("finished");
+    } else if (phase.game_status === "registration") {
+      showState("registration");
+    } else {
+      // Если есть другие фазы, можно добавить логику
+      showState("waiting");
+    }
+
+    // Обновляем админку
+    updateAdminStats(eventId);
+
+  } catch (e) {
+    console.error("Ошибка завершения фазы:", e);
+    document.getElementById("admin-notification").textContent = "Ошибка завершения фазы: " + e.message;
+  }
+}
+
+// ----------------- Автоматическая проверка статуса и старт игры -----------------
+async function checkAndStartGame(eventId) {
+  try {
+    const status = await ApiClient.getEventStatus(eventId);
+    if (status.game_status === "started") {
+      startGame(eventId);
+    } else {
+      showState("waiting");
+    }
+  } catch (e) {
+    console.error("Ошибка проверки статуса игры:", e);
+    document.getElementById("admin-notification").textContent = "Ошибка проверки статуса игры: " + e.message;
+  }
+}
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   const EVENT_ID = 2;
+//   checkAndStartGame(EVENT_ID);
+// });
+

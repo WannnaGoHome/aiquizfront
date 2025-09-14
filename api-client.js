@@ -51,7 +51,7 @@ const ApiClient = {
   // Добавьте обработку не-JSON ответов
 getUser: async (telegram_id) => {
 try {
-const res = await fetch(`${API_BASE}/users/${telegramId}`);
+const res = await fetch(`${API_BASE}/users/${telegram_id}`);
 
 // Проверяем content-type
 const contentType = res.headers.get('content-type');
@@ -76,7 +76,7 @@ throw e;
 
   deleteUser: async (telegramId) => {
     try {
-      const res = await fetch(`${API_BASE}/users/${telegramId}`, {
+      const res = await fetch(`${API_BASE}/users/${telegram_id}`, {
         method: "DELETE"
       });
       if (!res.ok) {
@@ -211,21 +211,21 @@ throw e;
 },
 
 createQuestion: async ({ quiz_id, text }) => {
-    try {
-        const res = await fetch(`${API_BASE}/quiz/questions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quiz_id, text })
-        });
-        if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка создания вопроса");
-        }
-        return await res.json();
-    } catch (e) {
-        console.error("API createQuestion error:", e);
-        throw e;
+  try {
+    const res = await fetch(`${API_BASE}/quiz/questions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quiz_id, text })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка создания вопроса");
     }
+    return await res.json();
+  } catch (e) {
+    console.error("API createQuestion error:", e);
+    throw e;
+  }
 },
 
 
@@ -243,23 +243,6 @@ createQuestion: async ({ quiz_id, text }) => {
     }
   },
 
-  createQuestion: async ({ quiz_id, text }) => {
-  try {
-    const res = await fetch(`${API_BASE}/quiz/questions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quiz_id, text })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка создания вопроса");
-    }
-    return await res.json();
-  } catch (e) {
-    console.error("API createQuestion error:", e);
-    throw e;
-  }
-},
 
   createUserAnswer: async (userId, questionId, answer) => {
     try {
