@@ -16,31 +16,6 @@ const registrationSuccess = document.getElementById("registration-success");
 const registrationError = document.getElementById("registration-error");
 const registeredNickname = document.getElementById("registered-nickname");
 
-// registrationForm.addEventListener("submit", async (e) => {
-//   e.preventDefault();
-//   const nickname = nicknameInput.value.trim();
-//   if (!nickname) return;
-
-//   try {
-//     registrationError.classList.add("hidden");
-//     await ApiClient.registerUser(telegramId, nickname);
-//     appState.userId = telegramId;
-//     appState.userNickname = nickname;
-
-//     const isAdmin = await ApiClient.checkAdmin(telegramId);
-//     if (isAdmin.is_admin) {
-//         showState("admin");
-//         updateAdminStats();
-//     } else {
-//         showState("waiting");
-//     }
-
-//   } catch (err) {
-//     registrationError.textContent = err.message;
-//     registrationError.classList.remove("hidden");
-//   }
-// });
-
 registrationForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const nickname = nicknameInput.value.trim();
@@ -48,57 +23,80 @@ registrationForm.addEventListener("submit", async (e) => {
 
   try {
     registrationError.classList.add("hidden");
-
-    console.log('Checking user existence...');
-    
-    // Проверяем существование пользователя с улучшенной обработкой ошибок
-    let existingUser;
-    try {
-      existingUser = await ApiClient.getUser(telegramId);
-      console.log('User found:', existingUser);
-    } catch (error) {
-      console.log('User not found or error:', error.message);
-      // Если пользователь не найден (404), продолжаем регистрацию
-      if (!error.message.includes('404') && !error.message.includes('Not Found')) {
-        throw error;
-      }
-    }
-
-    if (existingUser) {
-      appState.userId = telegramId;
-      appState.userNickname = existingUser.nickname || nickname;
-      console.log('Existing user, checking admin status...');
-
-      const isAdmin = await ApiClient.checkAdmin(telegramId);
-      if (isAdmin.is_admin) {
-        showState("admin");
-        updateAdminStats();
-      } else {
-        showState("waiting");
-      }
-      return;
-    }
-
-    // Регистрация нового пользователя
-    console.log('Registering new user...');
     await ApiClient.registerUser(telegramId, nickname);
     appState.userId = telegramId;
     appState.userNickname = nickname;
 
     const isAdmin = await ApiClient.checkAdmin(telegramId);
     if (isAdmin.is_admin) {
-      showState("admin");
-      updateAdminStats();
+        showState("admin");
+        updateAdminStats();
     } else {
-      showState("waiting");
+        showState("waiting");
     }
 
   } catch (err) {
-    console.error('Registration error:', err);
-    registrationError.textContent = `Ошибка: ${err.message}`;
+    registrationError.textContent = err.message;
     registrationError.classList.remove("hidden");
   }
 });
+
+// registrationForm.addEventListener("submit", async (e) => {
+//   e.preventDefault();
+//   const nickname = nicknameInput.value.trim();
+//   if (!nickname) return;
+
+//   try {
+//     registrationError.classList.add("hidden");
+    
+//     // Проверяем существование пользователя с улучшенной обработкой ошибок
+//     let existingUser;
+//     try {
+//       existingUser = await ApiClient.getUser(telegramId);
+//       console.log('User found:', existingUser);
+//     } catch (error) {
+//       console.log('User not found or error:', error.message);
+//       // Если пользователь не найден (404), продолжаем регистрацию
+//       if (!error.message.includes('404') && !error.message.includes('Not Found')) {
+//         throw error;
+//       }
+//     }
+
+//     if (existingUser) {
+//       appState.userId = telegramId;
+//       appState.userNickname = existingUser.nickname || nickname;
+//       console.log('Existing user, checking admin status...');
+
+//       const isAdmin = await ApiClient.checkAdmin(telegramId);
+//       if (isAdmin.is_admin) {
+//         showState("admin");
+//         updateAdminStats();
+//       } else {
+//         showState("waiting");
+//       }
+//       return;
+//     }
+
+//     // Регистрация нового пользователя
+//     console.log('Registering new user...');
+//     await ApiClient.registerUser(telegramId, nickname);
+//     appState.userId = telegramId;
+//     appState.userNickname = nickname;
+
+//     const isAdmin = await ApiClient.checkAdmin(telegramId);
+//     if (isAdmin.is_admin) {
+//       showState("admin");
+//       updateAdminStats();
+//     } else {
+//       showState("waiting");
+//     }
+
+//   } catch (err) {
+//     console.error('Registration error:', err);
+//     registrationError.textContent = `Ошибка: ${err.message}`;
+//     registrationError.classList.remove("hidden");
+//   }
+// });
 
 
 // Функция для переключения экранов
