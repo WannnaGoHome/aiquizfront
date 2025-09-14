@@ -4,7 +4,6 @@ let appState = {
   userNickname: '',
 };
 
-// Получаем Telegram Web App
 const tg = window.Telegram?.WebApp;
 tg?.expand();
 const telegramUser = tg?.initDataUnsafe?.user;
@@ -28,14 +27,16 @@ registrationForm.addEventListener("submit", async (e) => {
     appState.userNickname = nickname;
 
     // Показываем успешную регистрацию
-    registeredNickname.textContent = nickname;
-    registrationSuccess.classList.remove("hidden");
+    // registeredNickname.textContent = nickname;
+    // registrationSuccess.classList.remove("hidden");
 
     // Проверка на админа
     const isAdmin = await ApiClient.checkAdmin(telegramId);
     if (isAdmin === true || isAdmin === "true") {
       showState("admin");
     } else {
+      const waitingNickname = document.getElementById("waiting-nickname");
+      if (waitingNickname) waitingNickname.textContent = nickname;
       showState("waiting");
     }
   } catch (err) {
