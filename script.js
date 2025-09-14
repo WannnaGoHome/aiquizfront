@@ -404,24 +404,49 @@ async function checkAndStartGame(eventId) {
 document.addEventListener("DOMContentLoaded", () => {
   const EVENT_ID = 2;
 
-  // Через 10 секунд автоматически переключаемся на экран игры
-  setTimeout(() => {
+  // Функция автопоказа вопросов
+  function autoStartGame() {
     showState("game");
 
-    // Можно сразу показать первый вопрос (для теста)
-    const questionText = defaultQuestions[0];
-    document.getElementById("question-text").textContent = questionText;
-    document.getElementById("current-q").textContent = 1;
-    document.getElementById("total-qs").textContent = defaultQuestions.length;
+    let questionIndex = 0;
+    const totalQuestions = defaultQuestions.length;
 
-    // Таймер на первый вопрос
-    let timer = 10;
-    document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
-    const interval = setInterval(() => {
-      timer--;
+    function nextQuestion() {
+      if (questionIndex >= totalQuestions) {
+        // clearInterval(gameTimer);
+        // finishGamePhase(EVENT_ID);
+
+          clearInterval(gameTimer);
+  showState("finished"); // сразу переключаем экран
+  updateAdminStats(eventId); // если нужно обновить админку
+//  return;
+        return;
+      }
+
+      const questionText = defaultQuestions[questionIndex];
+      document.getElementById("question-text").textContent = questionText;
+      document.getElementById("current-q").textContent = questionIndex + 1;
+      document.getElementById("total-qs").textContent = totalQuestions;
+
+      // Таймер 10 секунд на вопрос
+      let timer = 10;
       document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
-      if (timer <= 0) clearInterval(interval);
-    }, 1000);
 
-  }, 10000); // 10 секунд ожидания
+      const interval = setInterval(() => {
+        timer--;
+        document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
+        if (timer <= 0) clearInterval(interval);
+      }, 1000);
+
+      questionIndex++;
+      gameTimer = setTimeout(nextQuestion, 10000);
+    }
+
+    nextQuestion();
+  }
+
+  // Через 10 секунд автоматически стартуем игру (для теста)
+  setTimeout(() => {
+    autoStartGame();
+  }, 10000);
 });
