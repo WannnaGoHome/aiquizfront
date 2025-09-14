@@ -403,6 +403,18 @@ async function checkAndStartGame(eventId) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const EVENT_ID = 2;
-  checkAndStartGame(EVENT_ID);
-});
 
+  const intervalId = setInterval(async () => {
+    try {
+      const status = await ApiClient.getEventStatus(EVENT_ID);
+      if (status.game_status === "started") {
+        clearInterval(intervalId);
+        startGame(EVENT_ID);
+      } else {
+        showState("waiting");
+      }
+    } catch (e) {
+      console.error("Ошибка проверки статуса игры:", e);
+    }
+  }, 2000); // проверяем каждые 2 секунды
+});
