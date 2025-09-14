@@ -404,17 +404,24 @@ async function checkAndStartGame(eventId) {
 document.addEventListener("DOMContentLoaded", () => {
   const EVENT_ID = 2;
 
-  const intervalId = setInterval(async () => {
-    try {
-      const status = await ApiClient.getEventStatus(EVENT_ID);
-      if (status.game_status === "started") {
-        clearInterval(intervalId);
-        startGame(EVENT_ID);
-      } else {
-        showState("waiting");
-      }
-    } catch (e) {
-      console.error("Ошибка проверки статуса игры:", e);
-    }
-  }, 2000); // проверяем каждые 2 секунды
+  // Через 10 секунд автоматически переключаемся на экран игры
+  setTimeout(() => {
+    showState("game");
+
+    // Можно сразу показать первый вопрос (для теста)
+    const questionText = defaultQuestions[0];
+    document.getElementById("question-text").textContent = questionText;
+    document.getElementById("current-q").textContent = 1;
+    document.getElementById("total-qs").textContent = defaultQuestions.length;
+
+    // Таймер на первый вопрос
+    let timer = 10;
+    document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
+    const interval = setInterval(() => {
+      timer--;
+      document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
+      if (timer <= 0) clearInterval(interval);
+    }, 1000);
+
+  }, 10000); // 10 секунд ожидания
 });
