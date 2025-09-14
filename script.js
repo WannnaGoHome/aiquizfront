@@ -32,12 +32,10 @@ registrationForm.addEventListener("submit", async (e) => {
 
     // Проверка на админа
     const isAdmin = await ApiClient.checkAdmin(telegramId);
-    if (isAdmin === true || isAdmin === "true") {
-      showState("admin");
+    if (isAdmin.is_admin) {
+        showState("admin");
     } else {
-      const waitingNickname = document.getElementById("waiting-nickname");
-      if (waitingNickname) waitingNickname.textContent = nickname;
-      showState("waiting");
+        showState("waiting");
     }
   } catch (err) {
     registrationError.textContent = err.message;
