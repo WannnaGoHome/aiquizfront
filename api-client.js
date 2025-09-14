@@ -48,19 +48,31 @@ const ApiClient = {
     }
   },
 
-  getUser: async (telegramId) => {
-    try {
-      const res = await fetch(`${API_BASE}/users/${telegramId}`);
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения пользователя");
-      }
-      return await res.json();
-    } catch (e) {
-      console.error("API getUser error:", e);
-      throw e;
-    }
-  },
+  // Добавьте обработку не-JSON ответов
+getUser: async (telegramId) => {
+try {
+const res = await fetch(`${API_BASE}/users/${telegramId}`);
+
+// Проверяем content-type
+const contentType = res.headers.get('content-type');
+
+if (!contentType || !contentType.includes('application/json')) {
+    const text = await res.text();
+    console.error('Non-JSON response:', text.substring(0, 200));
+    throw new Error(`Server returned non-JSON response: ${res.status}`);
+}
+
+if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения пользователя");
+}
+
+return await res.json();
+} catch (e) {
+console.error("API getUser error:", e);
+throw e;
+}
+},
 
   deleteUser: async (telegramId) => {
     try {
