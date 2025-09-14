@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квиз-Игра</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="app-container">
+         
+        <!-- 1. ЭКРАН РЕГИСТРАЦИИ -->
+        <div id="state-registration" class="state">
+            <div class="container">
+                <h1>🎯 Квиз-игра</h1>
+                <p>Зарегистрируйтесь для участия. Введите ваш игровой никнейм:</p>
+                
+                <form id="registration-form">
+                    <input type="text" id="nickname-input" placeholder="Ваш крутой ник" maxlength="20" required>
+                    <button type="submit" id="register-btn">Участвовать!</button>
+                </form>
+
+                <div id="registration-success" class="hidden">
+                    <div class="icon">✅</div>
+                    <p>Вы успешно зарегистрированы как <span id="registered-nickname"></span>!</p>
+                    <p>Ожидайте начала игры.</p>
+                </div>
+
+                <div id="registration-error" class="hidden error-message"></div>
+            </div>
+        </div>
+
+
+        <!-- 2. ЭКРАН ОЖИДАНИЯ -->
+        <div id="state-waiting" class="state hidden">
+            <div class="container">
+                <div class="icon">⏳</div>
+                <h1>Ожидаем начала игры</h1>
+                <p>Ваш никнейм: <strong id="waiting-nickname"></strong></p>
+                <p>Как только админ запустит игру, здесь появится первый вопрос. Оставайтесь на связи!</p>
+                
+                <!-- Кнопка выхода -->
+                <button onclick="logout()" class="btn btn-outline" style="margin-top: 2rem;">
+                    Выйти и сменить никнейм
+                </button>
+                
+                <div class="loader"></div>
+            </div>
+        </div>
+
+        <!-- 3. ЭКРАН ИГРЫ (СЕРДЦЕ ПРИЛОЖЕНИЯ) -->
+        <div id="state-game" class="state hidden">
+            <div class="container">
+                <!-- Верхний блок: Таймер и номер вопроса -->
+                <div class="question-header">
+                    <div id="question-timer" class="timer">20:00</div>
+                    <div id="question-progress">Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span></div>
+                </div>
+
+                <!-- Прогресс-бар -->
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Центральный блок: Текст вопроса -->
+                <div class="question-block">
+                    <h2 id="question-text">Текст текущего вопроса загружается...</h2>
+                </div>
+
+                <!-- Нижний блок: Форма ответа -->
+                <div class="answer-block">
+                    <textarea id="answer-textarea" placeholder="Введите ваш развернутый ответ здесь..." rows="5"></textarea>
+                    
+                    <div class="actions">
+                        <button id="submit-answer-btn" disabled>Отправить ответ</button>
+                        <div id="answer-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. ЭКРАН МЕЖДУ ВОПРОСАМИ -->
+        <div id="state-between" class="state hidden">
+            <div class="container">
+                <div class="icon">✅</div>
+                <h2>Ответ принят!</h2>
+                <p>Следующий вопрос появится через <span id="between-timer">5</span> секунд...</p>
+            </div>
+        </div>
+
+        <!-- 5. ЭКРАН ЗАВЕРШЕНИЯ -->
+        <div id="state-finished" class="state hidden">
+            <div class="container">
+                <div class="icon">🏁</div>
+                <h1>Игра завершена!</h1>
+                <p>Спасибо за ваши ответы и участие!</p>
+                <p>Сейчас наш ИИ-ассистент анализирует результаты. Итоги и список победителей будут опубликованы здесь позже.</p>
+            </div>
+        </div>
+
+        <!-- 6. ЭКРАН ПОБЕДИТЕЛЯ -->
+        <div id="state-winner" class="state hidden">
+            <div class="container">
+                <div class="icon">🏆</div>
+                <h1>Поздравляем!</h1>
+                <p>Ваши ответы были одними из самых лучших! Вы вошли в число победителей!</p>
+
+                <div class="prize-info">
+                    <h3>Ваш приз:</h3>
+                    <p>Подойдите к стойке организаторов на первом этаже и назовите свой никнейм <strong id="winner-nickname"></strong> для получения заслуженной награды.</p>
+                </div>
+
+                <p>Еще раз спасибо за участие!</p>
+            </div>
+        </div>
+
+        <!-- 7. ЭКРАН АДМИН-ПАНЕЛИ -->
+        <div id="state-admin" class="state hidden">
+            <div class="container">
+                <div class="card">
+                    
+                    <h1>Панель администратора</h1>
+                    
+                    <div class="admin-stats">
+                        <div class="stat-card">
+                            <h3>Статус игры</h3>
+                            <p id="admin-game-status">Не начата</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Текущий вопрос</h3>
+                            <p id="admin-current-question">0/5</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-actions">
+                        <button onclick="adminStartGame()" class="btn btn-success" id="admin-start-btn">
+                            Начать игру
+                        </button>
+                        
+                        <button onclick="adminNextQuestion()" class="btn btn-primary" id="admin-next-btn" disabled>
+                            Следующий вопрос
+                        </button>
+                        
+                        <button onclick="adminFinishGame()" class="btn btn-warning" id="admin-finish-btn" disabled>
+                            Завершить игру
+                        </button>
+                        
+                        <button onclick="adminPublishResults()" class="btn btn-info" id="admin-publish-btn" disabled>
+                            Объявить результаты
+                        </button>
+                        
+                        <button onclick="adminRestartGame()" class="btn btn-danger">
+                            Начать заново
+                        </button>
+                    </div>
+
+                    <div class="admin-notification" id="admin-notification"></div>
+                    
+                    <button onclick="showState('waiting')" class="btn btn-outline">
+                        ← Назад к игре
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="api-client.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
