@@ -401,8 +401,8 @@ async function checkAndStartGame(eventId) {
   }
 }
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   const EVENT_ID = 2;
-//   checkAndStartGame(EVENT_ID);
-// });
+document.addEventListener("DOMContentLoaded", () => {
+  const EVENT_ID = 2;
+  checkAndStartGame(EVENT_ID);
+});
 
