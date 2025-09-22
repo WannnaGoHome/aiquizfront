@@ -214,12 +214,12 @@ const defaultQuestions = [
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
-  setInterval(async () => {
-    try {
-      checkAndStartGame();
-    } catch (e) {
-      console.error("Ошибка проверки статуса игры:", e);
-    }
-  }, 2000);
-});
+// document.addEventListener("DOMContentLoaded", () => {
+//   setInterval(async () => {
+//     try {
+//       checkAndStartGame();
+//     } catch (e) {
+//       console.error("Ошибка проверки статуса игры:", e);
+//     }
+//   }, 2000);
+// });
