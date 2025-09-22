@@ -3,7 +3,7 @@ const API_BASE = "https://a7606a666e47.ngrok-free.app";
 const ApiClient = {
   registerUser: async (telegramId, nickname) => {
     try {
-      const res = await fetch(`${API_BASE}/users/register`, {
+      const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ telegram_id: telegramId, nickname })
