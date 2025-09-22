@@ -22,12 +22,15 @@ registrationForm.addEventListener("submit", async (e) => {
 
   try {
     registrationError.classList.add("hidden");
+    console.log("🚀 Начало процесса регистрации/авторизации...");
     const userData = await ApiClient.registerOrGetUser(telegramId, nickname);
     appState.userId=userData.userId;
     appState.userNickname=userData.nickname;
     appState.points=userData.points;
     console.log("✅ Пользователь вошёл:", appState);
+    showState('waiting');
   } catch (err) {
+    console.error("❌ Ошибка входа:", err);
     registrationError.textContent = err.message;
     registrationError.classList.remove("hidden");
   }
@@ -80,7 +83,8 @@ async function finishGamePhase() {
     document.getElementById("admin-notification").textContent = "Ошибка завершения фазы: " + e.message;
   }
 }
-
+// let eventId = 1; // или логика для определения актуального eventId
+// let quizId = 1;
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 async function checkAndStartGame() {
   try {
