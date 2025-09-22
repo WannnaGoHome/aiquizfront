@@ -62,8 +62,9 @@ const ApiClient = {
     }
   },
 
+  
   getUser: async (telegram_id) => {
-    const res = await fetch(`${API_BASE}/users/${telegram_id}`);
+    const res = await fetch(`${API_BASE}/users/?telegram_id={telegram_id}`);
     const text = await res.text();
     
     let data;
@@ -131,7 +132,6 @@ const ApiClient = {
     } catch (getUserError) {
       console.log("❌ Пользователь не найден, пробуем регистрацию:", getUserError);
       
-      // Если пользователь не найден (404), регистрируем
       if (getUserError.status === 401) {
         try {
           console.log("📝 Регистрируем нового пользователя...");
