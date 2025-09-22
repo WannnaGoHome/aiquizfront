@@ -64,7 +64,7 @@ const ApiClient = {
 
   
   getUser: async (telegram_id) => {
-    const res = await fetch(`${API_BASE}/users/?telegram_id={telegram_id}`);
+    const res = await fetch(`${API_BASE}/users/?telegram_id=${telegram_id}`);
     const text = await res.text();
     
     let data;
