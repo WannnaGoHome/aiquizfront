@@ -22,7 +22,7 @@ const ApiClient = {
     const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nickname })
+      body: JSON.stringify({ telegram_id: telegramId, nickname })
     });
 
     const data = await res.json();
