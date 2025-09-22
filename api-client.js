@@ -1,23 +1,38 @@
 const API_BASE = "https://a7606a666e47.ngrok-free.app";
 
 const ApiClient = {
+  // registerUser: async (telegramId, nickname) => {
+  //   try {
+  //     const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ telegram_id: telegramId, nickname })
+  //     });
+  //     if (!res.ok) {
+  //       const err = await res.json();
+  //       throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка регистрации");
+  //     }
+  //     return await res.json();
+  //   } catch (e) {
+  //     console.error("API registerUser error:", e);
+  //     throw e;
+  //   }
+  // },
   registerUser: async (telegramId, nickname) => {
-    try {
-      const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nickname })
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка регистрации");
-      }
-      return await res.json();
-    } catch (e) {
-      console.error("API registerUser error:", e);
-      throw e;
+    const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nickname })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw data;
     }
+    return data;
   },
+
 
   checkAdmin: async (telegram_id) => {
     try {
@@ -77,7 +92,8 @@ const ApiClient = {
     try{
       return await ApiClient.registerUser(telegramId, nickname);
     } catch (err) {
-      if (err?.detail?.code === "NICKNAME_TAKEN" || err?.detail?.code === "USER_ALREADY_EXISTS") {
+      const code = err?.detail?.code;
+      if (code === "NICKNAME_TAKEN" || code === "USER_ALREADY_EXISTS") {
         return await ApiClient.getUser(telegramId);
       }
       throw new Error(
