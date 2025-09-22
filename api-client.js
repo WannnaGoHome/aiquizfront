@@ -1,52 +1,52 @@
 const API_BASE = "https://a7606a666e47.ngrok-free.app";
 
 const ApiClient = {
-  // registerUser: async (telegramId, nickname) => {
-  //   try {
-  //     const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ telegram_id: telegramId, nickname })
-  //     });
-  //     if (!res.ok) {
-  //       const err = await res.json();
-  //       throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка регистрации");
-  //     }
-  //     return await res.json();
-  //   } catch (e) {
-  //     console.error("API registerUser error:", e);
-  //     throw e;
-  //   }
-  // },
-
   registerUser: async (telegramId, nickname) => {
-    const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        telegram_id: telegramId,
-        nickname: nickname,
-      }),
-    });
-
-    const text = await res.text();
-    // Попробуем безопасно распарсить JSON
-    let data;
     try {
-      data = text ? JSON.parse(text) : {};
+      const res = await fetch(`${API_BASE}/users/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegram_id: telegramId, nickname })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка регистрации");
+      }
+      return await res.json();
     } catch (e) {
-      throw new Error(`Сервер вернул не JSON: ${text.substring(0, 100)}`);
+      console.error("API registerUser error:", e);
+      throw e;
     }
-
-    if (!res.ok) {
-      const error = new Error(data.detail?.message || `HTTP ${res.status}`);
-      error.detail = data.detail;
-      error.status=res.status;
-      throw error;
-    }
-
-    return data;
   },
+
+  // registerUser: async (telegramId, nickname) => {
+  //   const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       telegram_id: telegramId,
+  //       nickname: nickname,
+  //     }),
+  //   });
+
+  //   const text = await res.text();
+  //   // Попробуем безопасно распарсить JSON
+  //   let data;
+  //   try {
+  //     data = text ? JSON.parse(text) : {};
+  //   } catch (e) {
+  //     throw new Error(`Сервер вернул не JSON: ${text.substring(0, 100)}`);
+  //   }
+
+  //   if (!res.ok) {
+  //     const error = new Error(data.detail?.message || `HTTP ${res.status}`);
+  //     error.detail = data.detail;
+  //     error.status=res.status;
+  //     throw error;
+  //   }
+
+  //   return data;
+  // },
 
 
 
