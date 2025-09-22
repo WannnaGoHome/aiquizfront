@@ -25,13 +25,21 @@ const ApiClient = {
       body: JSON.stringify({ telegram_id: telegramId, nickname })
     });
 
-    const data = await res.json();
+    // Попробуем безопасно распарсить JSON
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      throw new Error(`Сервер вернул не JSON: ${res.status}`);
+    }
 
     if (!res.ok) {
-      throw data;
+      throw data; // здесь уже будет {detail: {code, message}}
     }
+
     return data;
   },
+
 
 
   checkAdmin: async (telegram_id) => {
