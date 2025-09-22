@@ -97,15 +97,21 @@ const ApiClient = {
   },
 
   registerOrGetUser: async (telegramId, nickname) => {
-    try{
+    try {
       return await ApiClient.registerUser(telegramId, nickname);
     } catch (err) {
-      const code = err?.detail?.code;
+      // Проверяем, есть ли детали ошибки в ответе
+      const errorDetail = err.detail || (typeof err === 'object' ? err : null);
+      const code = errorDetail?.code;
+      
       if (code === "NICKNAME_TAKEN" || code === "USER_ALREADY_EXISTS") {
+        // Пытаемся получить существующего пользователя
         return await ApiClient.getUser(telegramId);
       }
+      
+      // Бросаем понятную ошибку
       throw new Error(
-        err?.detail?.message || "Ошибка при регистрации пользователя"
+        errorDetail?.message || "Ошибка при регистрации пользователя"
       );
     }
   },
