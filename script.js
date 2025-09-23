@@ -1,3 +1,5 @@
+const { act } = require("react");
+
 let appState = {
   currentState: 'registration',
   userId: null,
@@ -5,12 +7,13 @@ let appState = {
   points: null,
 };
 
-const ADMIN_IDS = [707309709, 1046929828]; 
+// const ADMIN_IDS = [707309709, 1046929828]; 
 
 const tg = window.Telegram?.WebApp;
 tg?.expand();
 const telegramUser = tg?.initDataUnsafe?.user;
 const telegramId = telegramUser?.id;
+
 const registrationForm = document.getElementById("registration-form");
 const nicknameInput = document.getElementById("nickname-input");
 const registrationError = document.getElementById("registration-error");
@@ -56,20 +59,23 @@ function showState(state) {
   appState.currentState = state;
 }
 
-
-// Выход/смена никнейма
-function logout() {
-  appState.userId = null;
-  appState.userNickname = '';
-  nicknameInput.value = '';
-  showState('registration');
+function shuffle(array) {
+  for (let i = array.length -1; i>0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [array [i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
+
 let gameTimer = null;
+
 
 // ----------------- Функция перехода к следующей фазе события -----------------
 async function finishGamePhase() {
   try {
+    const events = await ApiClient.listEvents();
+    const lastEvent = 
     let phase= await ApiClient.getEventStatus();
     if (phase.game_status === "finished") {
       showState("finished");
@@ -83,53 +89,31 @@ async function finishGamePhase() {
     document.getElementById("admin-notification").textContent = "Ошибка завершения фазы: " + e.message;
   }
 }
-// let eventId = 1; // или логика для определения актуального eventId
-// let quizId = 1;
+
+let questionIndex = 0;
+let questions = [];
+let intervalId = null;
+
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 async function checkAndStartGame() {
   try {
     const events = await ApiClient.listEvents();
-      if (events.length > 0) {
-        eventId = Math.max(...events.map(e => e.id));
-      }
-    const status = await ApiClient.getEventStatus(eventId);
-    if (status.game_status === "started") {
+    if (!events.length) return showState("waiting");
+
+    const event = events.reduce((a,b) => a.id > b.id ? a : b);
+    const eventStatus = await ApiClient.getEventStatus(event.id);
+
+    const quizzes = await ApiClient.listQuizzes();
+    const activeQuiz = quizzes.find(q => q.status ==="started");
+
+    
+    if (eventStatus.game_status === "started" && activeQuiz) {
       showState("game");
-      let questionIndex = 0;
-      let totalQuestions = await ApiClient.listQuestions(quizId);
-      if (!totalQuestions || totalQuestions.length === 0) {
-        totalQuestions = defaultQuestions;
-      }
-      let gameTimer = null;
-      let intervalId = null;
-      
-      function nextQuestion() {
-        if (questionIndex >= totalQuestions.length) {
-          clearTimeout(gameTimer);
-          finishGamePhase(eventId);
-          clearTimeout(gameTimer);
-          clearInterval(intervalId);
-          return;
-        }
 
-        const questionText = totalQuestions[questionIndex].question;
-        document.getElementById("question-text").textContent = questionText;
-        document.getElementById("current-q").textContent = questionIndex + 1;
-        document.getElementById("total-qs").textContent = totalQuestions.length;
-
-        let timer = 15;
-        clearInterval(intervalId);
-        document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
-        intervalId = setInterval(() => {
-          timer--;
-          document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
-          if (timer <= 0) clearInterval(intervalId);
-        }, 1000);
-
-        questionIndex++;
-        gameTimer = setTimeout(nextQuestion, 15000);
-      }
+      questions = shuffle(await ApiClient.listQuestions(activeQuiz.id));
+      questionIndex = 0;
       nextQuestion();
+      
     } else {
       showState("waiting");
     }
@@ -137,6 +121,36 @@ async function checkAndStartGame() {
     console.error("Произошла ошибка при запуске игры:", e);
     document.getElementById("admin-notification").textContent = "Ошибка: " + e.message;
   }
+}
+
+function nextQuestion() {
+  if (questionIndex >= questions.length) {
+    clearTimeout(gameTimer);
+    finishGamePhase(eventId);
+    clearTimeout(gameTimer);
+    clearInterval(intervalId);
+    return;
+  }
+
+  const q = questions[questionIndex];
+  document.getElementById("question-text").textContent = q.text;
+  document.getElementById("current-q").textContent = questionIndex + 1;
+  document.getElementById("total-qs").textContent = totalQuestions.length;
+
+  let timer = 15;
+
+  document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
+  clearInterval(intervalId);
+
+  intervalId = setInterval(() => {
+    timer--;
+    document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
+    if (timer <= 0){
+      clearInterval(intervalId);
+      questionIndex++;
+      nextQuestion();
+    }
+  }, 1000);
 }
 
 const defaultQuestions = [
@@ -212,6 +226,12 @@ const defaultQuestions = [
   },
 ];
 
+function logout() {
+  appState.userId = null;
+  appState.userNickname = '';
+  nicknameInput.value = '';
+  showState('registration');
+}
 
 
 // document.addEventListener("DOMContentLoaded", () => {
