@@ -131,7 +131,7 @@ const ApiClient = {
 
   registerOrGetUser: async (telegramId, nickname) => {
     console.log("🔍 Проверяем существующего пользователя...");
-    console.log("🔎 Делаем getUser для id =", telegram_id);
+    console.log("🔎 Делаем getUser для id =", telegramId);
     const user = await ApiClient.getUser(telegramId).catch(err => {
       if (err.status === 401 || err.status === 404) {
         // Пользователь не найден → идём регистрировать
