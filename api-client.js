@@ -51,20 +51,23 @@ const ApiClient = {
 
 
   checkAdmin: async (telegram_id) => {
-    try {
-      const res = await fetch(`${API_BASE}/users/check_admin?telegram_id=${telegram_id}`, {
-        method: "POST"
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка проверки админа");
-      }
-      return await res.json();
-    } catch (e) {
-      console.error("API checkAdmin error:", e);
-      throw e;
+  try {
+    const res = await fetch(`${API_BASE}/users/check_admin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegram_id })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка проверки админа");
     }
-  },
+    return await res.json();
+  } catch (e) {
+    console.error("API checkAdmin error:", e);
+    throw e;
+  }
+},
+
 
   
   getUser: async (telegram_id) => {
@@ -128,6 +131,7 @@ const ApiClient = {
 
   registerOrGetUser: async (telegramId, nickname) => {
     console.log("🔍 Проверяем существующего пользователя...");
+    console.log("🔎 Делаем getUser для id =", telegram_id);
     const user = await ApiClient.getUser(telegramId).catch(err => {
       if (err.status === 401 || err.status === 404) {
         // Пользователь не найден → идём регистрировать
