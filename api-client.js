@@ -341,19 +341,19 @@ const ApiClient = {
     
 
 
-  // listEvents: async () => {
-  //   try {
-  //     const res = await fetch(`${API_BASE}/events/`, { method: "GET" });
-  //     if (!res.ok) {
-  //       const err = await res.json();
-  //       throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения списка событий");
-  //     }
-  //     return await res.json();
-  //   } catch (e) {
-  //     console.error("API listEvents error:", e);
-  //     throw e;
-  //   }
-  // },
+  listEvents: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/events/`, { method: "GET" });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения списка событий");
+      }
+      return await res.json();
+    } catch (e) {
+      console.error("API listEvents error:", e);
+      throw e;
+    }
+  },
 
 
 
