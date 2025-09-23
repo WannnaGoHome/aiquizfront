@@ -1,54 +1,109 @@
 const API_BASE = "https://a7606a666e47.ngrok-free.app";
 
 const ApiClient = {
+  // registerUser: async (telegramId, nickname) => {
+  //   try {
+  //     const res = await fetch(`${API_BASE}/users/register`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ telegram_id: telegramId, nickname })
+  //     });
+  //     if (!res.ok) {
+  //       const err = await res.json();
+  //       throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка регистрации");
+  //     }
+  //     return await res.json();
+  //   } catch (e) {
+  //     console.error("API registerUser error:", e);
+  //     throw e;
+  //   }
+  // },
+
+  getUser: async (telegram_id) => {
+    try {
+      const res = await fetch(`${API_BASE}/users/${telegram_id}`, {
+        method: "GET",
+        headers: { "Accept": "application/json" } // явно просим JSON
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+      const text = await res.text();
+
+      // Если сервер вернул HTML (ngrok free, ошибка CORS и т.п.)
+      if (!contentType.includes("application/json")) {
+        console.error("Non-JSON response from server:", text.substring(0, 200));
+        throw new Error("Сервер вернул не JSON (скорее всего ngrok/CORS).");
+      }
+
+      const data = JSON.parse(text);
+
+      if (!res.ok) {
+        const error = new Error(data.detail?.message || `HTTP ${res.status}`);
+        error.detail = data.detail;
+        error.status = res.status;
+        throw error;
+      }
+
+      return data;
+    } catch (e) {
+      console.error("API getUser error:", e);
+      throw e;
+    }
+  },
+
   registerUser: async (telegramId, nickname) => {
     try {
       const res = await fetch(`${API_BASE}/users/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json" // явно просим JSON
+        },
         body: JSON.stringify({ telegram_id: telegramId, nickname })
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка регистрации");
+
+      const contentType = res.headers.get("content-type") || "";
+      const text = await res.text();
+
+      if (!contentType.includes("application/json")) {
+        console.error("Non-JSON response from server:", text.substring(0, 200));
+        throw new Error("Сервер вернул не JSON (скорее всего ngrok/CORS).");
       }
-      return await res.json();
+
+      const data = JSON.parse(text);
+
+      if (!res.ok) {
+        const err = new Error(data.detail?.message || `HTTP ${res.status}`);
+        err.detail = data.detail;
+        throw err;
+      }
+
+      return data;
     } catch (e) {
       console.error("API registerUser error:", e);
       throw e;
     }
   },
 
-  // registerUser: async (telegramId, nickname) => {
-  //   const res = await fetch(`${API_BASE}/users/register?telegram_id=${telegramId}`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       telegram_id: telegramId,
-  //       nickname: nickname,
-  //     }),
-  //   });
+  registerOrGetUser: async (telegramId, nickname) => {
+    console.log("🔍 Проверяем существующего пользователя...");
+    let user = null;
+    try {
+      user = await ApiClient.getUser(telegramId);
+      console.log("✅ Пользователь найден:", user);
+      return user;
+    } catch (err) {
+      if (err.status === 401 || err.status === 404) {
+        console.log("Пользователь не найден. Регистрируем...");
+      } else {
+        throw err;
+      }
+    }
 
-  //   const text = await res.text();
-  //   // Попробуем безопасно распарсить JSON
-  //   let data;
-  //   try {
-  //     data = text ? JSON.parse(text) : {};
-  //   } catch (e) {
-  //     throw new Error(`Сервер вернул не JSON: ${text.substring(0, 100)}`);
-  //   }
-
-  //   if (!res.ok) {
-  //     const error = new Error(data.detail?.message || `HTTP ${res.status}`);
-  //     error.detail = data.detail;
-  //     error.status=res.status;
-  //     throw error;
-  //   }
-
-  //   return data;
-  // },
-
-
+    const newUser = await ApiClient.registerUser(telegramId, nickname);
+    console.log("✅ Новый пользователь зарегистрирован:", newUser);
+    return newUser;
+  },
 
   checkAdmin: async (telegram_id) => {
   try {
@@ -70,26 +125,26 @@ const ApiClient = {
 
 
   
-  getUser: async (telegram_id) => {
-    const res = await fetch(`${API_BASE}/users/${telegram_id}`, { method: "GET" });
-    const text = await res.text();
+  // getUser: async (telegram_id) => {
+  //   const res = await fetch(`${API_BASE}/users/${telegram_id}`, { method: "GET" });
+  //   const text = await res.text();
     
-    let data;
-    try {
-      data = text ? JSON.parse(text) : {};
-    } catch (e) {
-      throw new Error(`Server returned invalid JSON: ${text.substring(0, 100)}`);
-    }
+  //   let data;
+  //   try {
+  //     data = text ? JSON.parse(text) : {};
+  //   } catch (e) {
+  //     throw new Error(`Server returned invalid JSON: ${text.substring(0, 100)}`);
+  //   }
 
-    if (!res.ok) {
-      const error = new Error(data.detail?.message || `HTTP ${res.status}`);
-      error.detail = data.detail;
-      error.status = res.status;
-      throw error;
-    }
+  //   if (!res.ok) {
+  //     const error = new Error(data.detail?.message || `HTTP ${res.status}`);
+  //     error.detail = data.detail;
+  //     error.status = res.status;
+  //     throw error;
+  //   }
 
-    return data;
-  },
+  //   return data;
+  // },
 
   // listUsers: async () => {
   //   try {
@@ -129,40 +184,42 @@ const ApiClient = {
   //   }
   // },
 
-  registerOrGetUser: async (telegramId, nickname) => {
-    console.log("🔍 Проверяем существующего пользователя...");
-    console.log("🔎 Делаем getUser для id =", telegramId);
-    const user = await ApiClient.getUser(telegramId).catch(err => {
-      if (err.status === 401 || err.status === 404) {
-        // Пользователь не найден → идём регистрировать
-        return null;
-      }
-      // Если другая ошибка (например 500), пробрасываем её дальше
-      throw err;
-    });
+  
 
-    if (user) {
-      console.log("✅ Пользователь найден:", user);
-      return user;
-    }
+  // registerOrGetUser: async (telegramId, nickname) => {
+  //   console.log("🔍 Проверяем существующего пользователя...");
+  //   console.log("🔎 Делаем getUser для id =", telegramId);
+  //   const user = await ApiClient.getUser(telegramId).catch(err => {
+  //     if (err.status === 401 || err.status === 404) {
+  //       // Пользователь не найден → идём регистрировать
+  //       return null;
+  //     }
+  //     // Если другая ошибка (например 500), пробрасываем её дальше
+  //     throw err;
+  //   });
 
-    console.log("📝 Регистрируем нового пользователя...");
-    try {
-      const newUser = await ApiClient.registerUser(telegramId, nickname);
-      console.log("✅ Новый пользователь зарегистрирован:", newUser);
-      return newUser;
-    } catch (registerError) {
-      console.error("❌ Ошибка регистрации:", registerError);
+  //   if (user) {
+  //     console.log("✅ Пользователь найден:", user);
+  //     return user;
+  //   }
 
-      // Обрабатываем частные случаи
-      const errorCode = registerError.detail?.code;
-      if (errorCode === "NICKNAME_TAKEN") {
-        throw new Error("Этот никнейм уже занят. Выберите другой.");
-      }
+  //   console.log("📝 Регистрируем нового пользователя...");
+  //   try {
+  //     const newUser = await ApiClient.registerUser(telegramId, nickname);
+  //     console.log("✅ Новый пользователь зарегистрирован:", newUser);
+  //     return newUser;
+  //   } catch (registerError) {
+  //     console.error("❌ Ошибка регистрации:", registerError);
 
-      throw new Error(registerError.detail?.message || "Ошибка при регистрации");
-    }
-  },
+  //     // Обрабатываем частные случаи
+  //     const errorCode = registerError.detail?.code;
+  //     if (errorCode === "NICKNAME_TAKEN") {
+  //       throw new Error("Этот никнейм уже занят. Выберите другой.");
+  //     }
+
+  //     throw new Error(registerError.detail?.message || "Ошибка при регистрации");
+  //   }
+  // },
 
   // deleteUser: async (telegramId) => {
   //   try {
