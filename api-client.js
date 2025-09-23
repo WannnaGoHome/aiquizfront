@@ -23,8 +23,9 @@ const ApiClient = {
     try {
       const res = await fetch(`${API_BASE}/users/${telegram_id}`, {
         method: "GET",
-        headers: { "Accept": "application/json" },
-        "ngrok-skip-browser-warning": "1" // явно просим JSON
+        headers: { "Accept": "application/json",
+        "ngrok-skip-browser-warning": "1"
+        }, // явно просим JSON
       });
 
       const contentType = res.headers.get("content-type") || "";
