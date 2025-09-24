@@ -1,4 +1,3 @@
-const { act } = require("react");
 
 let appState = {
   currentState: 'registration',
