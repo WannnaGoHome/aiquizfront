@@ -77,6 +77,9 @@ body {
   display: flex;
   flex-direction: column;
   padding: 20px 0;
+  justify-content: center; /* Центрирование по вертикали */
+  align-items: center;   
+  text-align: center;  
 }
 
 .state.hidden {
