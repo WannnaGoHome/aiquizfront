@@ -66,55 +66,54 @@ function shuffle(input) {
 }
 
 // ----------------- Функция перехода к следующей фазе события -----------------
-// async function finishGamePhase() {
-//   try {
-//     //const events = await ApiClient.listEvents();
-//     let phase= await ApiClient.getEventStatus(event_id, telegramId);
-//     if (phase.game_status === "finished") {
-//       showState("finished");
-//     } else if (phase.game_status === "registration") {
-//       showState("registration");
-//     } else {
-//       showState("waiting-results");
-//     }
-//   } catch (e) {
-//     console.error("Ошибка завершения фазы:", e);
-//     document.getElementById("admin-notification").textContent = "Ошибка завершения фазы: " + e.message;
-//   }
-// }
+async function finishGamePhase() {
+  try {
+    //const events = await ApiClient.listEvents();
+    let phase= await ApiClient.getEventStatus(event_id, telegramId);
+    if (phase.game_status === "finished") {
+      showState("finished");
+    } else if (phase.game_status === "registration") {
+      showState("registration");
+    } else {
+      showState("waiting-results");
+    }
+  } catch (e) {
+    console.error("Ошибка завершения фазы:", e);
+    document.getElementById("admin-notification").textContent = "Ошибка завершения фазы: " + e.message;
+  }
+}
+
+let gameStarted = false; // 🧠 глобальный флаг
 
 async function checkAndStartGame() {
   try {
-    // Получаем статус события
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
 
-    // ⚙️ Проверяем, началась ли игра
     if (eventStatus.game_status === "started") {
-      console.log("🎮 Игра началась — загружаем локальные вопросы...");
+      // ⚙️ Проверка: если уже начали — ничего не делаем
+      if (gameStarted) return;
 
-      // ⬇️ Берём локальные вопросы и добавляем id + quiz_id
+      console.log("🎮 Игра началась — загружаем локальные вопросы...");
+      gameStarted = true; // ✅ ставим флаг
+
       const raw = defaultQuestionsFromJson.items.map((q, i) => ({
         ...q,
         id: i + 1,
         quiz_id: 1
       }));
 
-      // Перемешиваем
       questions = shuffle(raw);
       questionIndex = 0;
 
-      // Определяем тип первого вопроса и показываем нужный экран
       const firstType = questions[0]?.type;
-      if (firstType === "open") {
-        showState("game-open");
-      } else {
-        showState("game");
-      }
+      showState(firstType === "open" ? "game-open" : "game");
 
-      // Запускаем первый вопрос
       nextQuestion();
     } else {
-      showState("waiting");
+      // если статус не "started", сбрасываем флаг, но НЕ перезапускаем игру
+      if (!gameStarted && appState.currentState !== "waiting") {
+        showState("waiting");
+      }
     }
   } catch (e) {
     console.error("Произошла ошибка при запуске игры:", e);
