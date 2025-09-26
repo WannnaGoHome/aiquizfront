@@ -83,43 +83,43 @@ function shuffle(input) {
 //   }
 // }
 
-// async function checkAndStartGame() {
-//   try {
-//     // Получаем статус события
-//     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
+async function checkAndStartGame() {
+  try {
+    // Получаем статус события
+    const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
 
-//     // ⚙️ Проверяем, началась ли игра
-//     if (eventStatus.game_status === "started") {
-//       console.log("🎮 Игра началась — загружаем локальные вопросы...");
+    // ⚙️ Проверяем, началась ли игра
+    if (eventStatus.game_status === "started") {
+      console.log("🎮 Игра началась — загружаем локальные вопросы...");
 
-//       // ⬇️ Берём локальные вопросы и добавляем id + quiz_id
-//       const raw = defaultQuestionsFromJson.items.map((q, i) => ({
-//         ...q,
-//         id: i + 1,
-//         quiz_id: 1
-//       }));
+      // ⬇️ Берём локальные вопросы и добавляем id + quiz_id
+      const raw = defaultQuestionsFromJson.items.map((q, i) => ({
+        ...q,
+        id: i + 1,
+        quiz_id: 1
+      }));
 
-//       // Перемешиваем
-//       questions = shuffle(raw);
-//       questionIndex = 0;
+      // Перемешиваем
+      questions = shuffle(raw);
+      questionIndex = 0;
 
-//       // Определяем тип первого вопроса и показываем нужный экран
-//       const firstType = questions[0]?.type;
-//       if (firstType === "open") {
-//         showState("game-open");
-//       } else {
-//         showState("game");
-//       }
+      // Определяем тип первого вопроса и показываем нужный экран
+      const firstType = questions[0]?.type;
+      if (firstType === "open") {
+        showState("game-open");
+      } else {
+        showState("game");
+      }
 
-//       // Запускаем первый вопрос
-//       nextQuestion();
-//     } else {
-//       showState("waiting");
-//     }
-//   } catch (e) {
-//     console.error("Произошла ошибка при запуске игры:", e);
-//   }
-// }
+      // Запускаем первый вопрос
+      nextQuestion();
+    } else {
+      showState("waiting");
+    }
+  } catch (e) {
+    console.error("Произошла ошибка при запуске игры:", e);
+  }
+}
 
 
 const defaultQuestionsFromJson = {
@@ -423,34 +423,34 @@ let currentLang = 'ru';
 let event_id = 1; //TODO 
 
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
-async function checkAndStartGame() {
-  // если мы ждём результаты или уже всё завершено — ничего не делаем
-  if (appState.currentState === 'waiting-results' || appState.currentState === 'finished') return;
+// async function checkAndStartGame() {
+//   // если мы ждём результаты или уже всё завершено — ничего не делаем
+//   if (appState.currentState === 'waiting-results' || appState.currentState === 'finished') return;
 
-  try {
-    const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
-    const quizzes = await ApiClient.listQuizzes(event_id);
-    const activeQuiz = quizzes.find(q => q.is_active);
+//   try {
+//     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
+//     const quizzes = await ApiClient.listQuizzes(event_id);
+//     const activeQuiz = quizzes.find(q => q.is_active);
 
-    if (eventStatus.game_status === "started" && activeQuiz) {
-      if (appState.currentState !== 'game' && appState.currentState !== 'game-open') {
-        //const raw = await ApiClient.listQuestions(activeQuiz.id);
-        const raw=defaultQuestionsFromJson;
-        questions = shuffle(raw);
-        questionIndex = 0;
-        const firstType = questions[0]?.type;
-        showState(firstType === "open" ? "game-open" : "game");
-        nextQuestion();
-      }
-    } else {
-      if (appState.currentState !== 'waiting') showState("waiting");
-    }
-  } catch (e) {
-    console.error("Произошла ошибка при запуске игры:", e);
-    const adminEl = document.getElementById("admin-notification");
-    if (adminEl) adminEl.textContent = "Ошибка: " + e.message;
-  }
-}
+//     if (eventStatus.game_status === "started" && activeQuiz) {
+//       if (appState.currentState !== 'game' && appState.currentState !== 'game-open') {
+//         //const raw = await ApiClient.listQuestions(activeQuiz.id);
+//         const raw=defaultQuestionsFromJson;
+//         questions = shuffle(raw);
+//         questionIndex = 0;
+//         const firstType = questions[0]?.type;
+//         showState(firstType === "open" ? "game-open" : "game");
+//         nextQuestion();
+//       }
+//     } else {
+//       if (appState.currentState !== 'waiting') showState("waiting");
+//     }
+//   } catch (e) {
+//     console.error("Произошла ошибка при запуске игры:", e);
+//     const adminEl = document.getElementById("admin-notification");
+//     if (adminEl) adminEl.textContent = "Ошибка: " + e.message;
+//   }
+// }
 
 // function qText(q, lang) {
 //   //q.text = {ru: "...", en: "..."};
