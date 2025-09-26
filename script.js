@@ -92,29 +92,25 @@ let event_id = 1; //TODO
 
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 async function checkAndStartGame() {
-  try {
-    // const events = await ApiClient.listEvents();
-    // if (!events.length) return showState("waiting");
+  // если мы ждём результаты или уже всё завершено — ничего не делаем
+  if (appState.currentState === 'waiting-results' || appState.currentState === 'finished') return;
 
+  try {
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
     const quizzes = await ApiClient.listQuizzes(event_id);
     const activeQuiz = quizzes.find(q => q.is_active);
 
     if (eventStatus.game_status === "started" && activeQuiz) {
-      const raw = await ApiClient.listQuestions(activeQuiz.id); // ← уже массив
-      questions = shuffle(raw);
-      questionIndex = 0;
-
-      const firstType = questions[0]?.type;
-      if (firstType === "open") {
-        showState("game-open");
-      } else {
-        showState("game");
+      if (appState.currentState !== 'game' && appState.currentState !== 'game-open') {
+        const raw = await ApiClient.listQuestions(activeQuiz.id);
+        questions = shuffle(raw);
+        questionIndex = 0;
+        const firstType = questions[0]?.type;
+        showState(firstType === "open" ? "game-open" : "game");
+        nextQuestion();
       }
-
-      nextQuestion();
     } else {
-      showState("waiting");
+      if (appState.currentState !== 'waiting') showState("waiting");
     }
   } catch (e) {
     console.error("Произошла ошибка при запуске игры:", e);
@@ -122,6 +118,7 @@ async function checkAndStartGame() {
     if (adminEl) adminEl.textContent = "Ошибка: " + e.message;
   }
 }
+
 
 function qText(q, lang) {
   //q.text = {ru: "...", en: "..."};
