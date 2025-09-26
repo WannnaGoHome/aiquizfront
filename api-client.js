@@ -195,7 +195,7 @@ const ApiClient = {
 
   sendAnswer: async (telegramId, questionId, quizId, answers, locale) => {
     try {
-      const res = await fetch(`${API_BASE}/quizes/answers?telegram_id=${telegramId}`, {
+      const res = await fetch(`${API_BASE}/quizes/answer?telegram_id=${telegramId}`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

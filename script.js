@@ -148,9 +148,8 @@ function qCorrect(q, lang) {
 }
 
 function renderOptions(options) {
-  const container = document.getElementById("options");
+  const container = qs("options");
   if (!container) return;
-
   container.innerHTML = "";
   options.forEach((opt, i) => {
     const btn = document.createElement("div");
@@ -162,11 +161,14 @@ function renderOptions(options) {
   });
 }
 
+
 function handleOptionClick(index) {
   const q = questions[questionIndex];
   const options = qOptions(q, currentLang);
   const chosen = options[index];
   const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
+
+  // блокируем остальные кнопки
   document.querySelectorAll(".answer-option").forEach(btn => btn.classList.add("disabled"));
 
   ApiClient.sendAnswer(
@@ -175,23 +177,32 @@ function handleOptionClick(index) {
     q.quiz_id,
     [chosen],
     currentLang
-  ).then(res => {
-    console.log("Ответ отправлен:", res);
+  )
+    .then(res => {
+      console.log("Ответ отправлен:", res);
 
-    if (res.is_correct) {
+      // ✅ временно всегда зелёный
       selectedBtn.classList.add("correct");
-    } else {
-      selectedBtn.classList.add("incorrect");
-    }
 
-    setTimeout(() => {
-      questionIndex++;
-      nextQuestion();
-    }, 1500);
-  }).catch(err => {
-    console.error("Ошибка при отправке:", err);
-    selectedBtn.classList.add("incorrect");
-  });
+      // переход к следующему вопросу
+      setTimeout(() => {
+        questionIndex++;
+        nextQuestion();
+      }, 1500);
+    })
+    .catch(err => {
+      console.error("Ошибка при отправке:", err);
+      // при ошибке всё равно отмечаем зелёным (можно поменять на красный, если нужно)
+      selectedBtn.classList.add("correct");
+    });
+}
+
+
+function qs(id) {
+  return document.querySelector(`#state-${appState.currentState} #${id}`);
+}
+function qsa(sel) {
+  return document.querySelectorAll(`#state-${appState.currentState} ${sel}`);
 }
 
 
@@ -205,13 +216,17 @@ function nextQuestion() {
 
   const q = questions[questionIndex];
 
-  // Обновляем текст и таймер
-  document.getElementById("question-text").textContent = qText(q, currentLang);
-  document.getElementById("current-q").textContent = String(questionIndex + 1);
-  document.getElementById("total-qs").textContent = String(questions.length);
+  const qTextEl = qs("question-text");
+  const curEl   = qs("current-q");
+  const totEl   = qs("total-qs");
+  const timerEl = qs("question-timer");
+  if (!qTextEl || !curEl || !totEl || !timerEl) return;
+
+  qTextEl.textContent = qText(q, currentLang);
+  curEl.textContent = String(questionIndex + 1);
+  totEl.textContent = String(questions.length);
 
   let timer = Number(q.duration_seconds) > 0 ? Number(q.duration_seconds) : 15;
-  const timerEl = document.getElementById("question-timer");
   const fmt = s => `00:${s < 10 ? '0' + s : s}`;
   timerEl.textContent = fmt(timer);
 
@@ -219,23 +234,14 @@ function nextQuestion() {
   intervalId = setInterval(() => {
     timer--;
     timerEl.textContent = fmt(timer);
-    if (timer <= 0) {
-      clearInterval(intervalId);
-      questionIndex++;
-      nextQuestion();
-    }
+    if (timer <= 0) { clearInterval(intervalId); questionIndex++; nextQuestion(); }
   }, 1000);
 
-  // 🧠 Разделяем по типу
   if (q.type === "single") {
-    // ✅ есть варианты
-    const options = qOptions(q, currentLang);
-    renderOptions(options);
-  } else if (q.type === "open") {
-    // ❌ не вызываем renderOptions
-    // показываем textarea и кнопку
-    const textarea = document.getElementById("answer-textarea");
-    const submitBtn = document.getElementById("submit-answer-btn");
+    renderOptions(qOptions(q, currentLang));
+  } else { // open
+    const textarea = qs("answer-textarea");
+    const submitBtn = qs("submit-answer-btn");
     if (textarea && submitBtn) {
       submitBtn.disabled = false;
       submitBtn.onclick = async () => {
