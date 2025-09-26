@@ -153,22 +153,24 @@ const ApiClient = {
   },
 
   listQuestions: async (quizId) => {
-      try {
-        const res = await fetch(`${API_BASE}/quizes/${quizId}`, {
-          method: "GET", 
-          headers: { "Accept": "application/json",
-            "ngrok-skip-browser-warning": "1"
-          },
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения вопросов");
-        }
-        return await res.json(); // [{text, id, quiz_id}, ...]
-      } catch (e) {
-        console.error("API listQuestions error:", e);
-        throw e;
+  try {
+    const res = await fetch(`${API_BASE}/quizes/${quizId}`, {
+      headers: {
+        "Accept": "application/json",
+        "ngrok-skip-browser-warning": "1"
       }
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения вопросов");
+    }
+    const data = await res.json();
+    // 👇 ВСЕГДА МАССИВ
+    return Array.isArray(data) ? data : [data];
+  } catch (e) {
+    console.error("API listQuestions error:", e);
+    throw e;
+  }
   },
 
   listEvents: async (telegram_id) => {

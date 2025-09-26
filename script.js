@@ -56,10 +56,10 @@ function showState(state) {
   appState.currentState = state;
 }
 
-function shuffle(array) {
-  const a = array.slice();
-  for (let i = a.length -1; i>0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
+function shuffle(input) {
+  const a = Array.isArray(input) ? input.slice() : [input]; // защита
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
@@ -93,27 +93,32 @@ let event_id = 1; //TODO
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 async function checkAndStartGame() {
   try {
-    // const events = await ApiClient.listEvents();
-    // if (!events.length) return showState("waiting");
+    const events = await ApiClient.listEvents();
+    if (!events.length) return showState("waiting");
 
-    // const event = events.reduce((a,b) => a.id > b.id ? a : b); TODO
     const eventStatus = await ApiClient.getEventStatus(event_id);
     const quizzes = await ApiClient.listQuizzes(event_id);
     const activeQuiz = quizzes.find(q => q.is_active);
 
     if (eventStatus.game_status === "started" && activeQuiz) {
-      showState("game");
-      const raw = await ApiClient.listQuestions(activeQuiz.id);
+      const raw = await ApiClient.listQuestions(activeQuiz.id); // ← уже массив
       questions = shuffle(raw);
       questionIndex = 0;
+
+      const firstType = questions[0]?.type;
+      if (firstType === "open") {
+        showState("game-open");
+      } else {
+        showState("game");
+      }
+
       nextQuestion();
-      
     } else {
       showState("waiting");
     }
   } catch (e) {
     console.error("Произошла ошибка при запуске игры:", e);
-    document.getElementById("admin-notification").textContent = "Ошибка: " + e.message;
+    document.getElementById("admin-notification")?.textContent = "Ошибка: " + e.message;
   }
 }
 
@@ -191,8 +196,6 @@ function handleOptionClick(index) {
       selectedBtn.classList.add("wrong"); // красный при ошибке
     });
 }
-
-
 
 function nextQuestion() {
   if (questionIndex >= questions.length) {
