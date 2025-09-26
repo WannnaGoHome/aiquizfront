@@ -149,10 +149,12 @@ function qCorrect(q, lang) {
 
 function renderOptions(options) {
   const container = document.getElementById("options");
+  if (!container) return;
+
   container.innerHTML = "";
   options.forEach((opt, i) => {
-    const btn = document.createElement("button");
-    btn.className = "option";
+    const btn = document.createElement("div");
+    btn.className = "answer-option";
     btn.dataset.index = i;
     btn.textContent = opt;
     btn.onclick = () => handleOptionClick(i);
@@ -163,40 +165,35 @@ function renderOptions(options) {
 function handleOptionClick(index) {
   const q = questions[questionIndex];
   const options = qOptions(q, currentLang);
-  const chosen = options[index]; // выбранный вариант
+  const chosen = options[index];
+  const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
+  document.querySelectorAll(".answer-option").forEach(btn => btn.classList.add("disabled"));
 
-  const selectedBtn = document.querySelector(`.option[data-index="${index}"]`);
-  document.querySelectorAll(".option").forEach(btn => btn.disabled = true);
-
-  // Отправляем ответ на бэк
   ApiClient.sendAnswer(
-    telegramId,     // ID пользователя
-    q.id,           // ID вопроса
-    q.quiz_id,      // ID викторины
-    [chosen],       // массив выбранных ответов
-    currentLang     // локаль (ru/en)
-  )
-    .then(res => {
-      console.log("Ответ отправлен:", res);
+    telegramId,
+    q.id,
+    q.quiz_id,
+    [chosen],
+    currentLang
+  ).then(res => {
+    console.log("Ответ отправлен:", res);
 
-      // Подсветка выбранного ответа
-      if (res.is_correct) {
-        selectedBtn.classList.add("correct"); // зелёный, если правильно
-      } else {
-        selectedBtn.classList.add("wrong");   // красный, если неправильно
-      }
+    if (res.is_correct) {
+      selectedBtn.classList.add("correct");
+    } else {
+      selectedBtn.classList.add("incorrect");
+    }
 
-      // Переход к следующему вопросу через 1.5 секунды
-      setTimeout(() => {
-        questionIndex++;
-        nextQuestion();
-      }, 1500);
-    })
-    .catch(err => {
-      console.error("Ошибка при отправке ответа:", err);
-      selectedBtn.classList.add("wrong"); // красный при ошибке
-    });
+    setTimeout(() => {
+      questionIndex++;
+      nextQuestion();
+    }, 1500);
+  }).catch(err => {
+    console.error("Ошибка при отправке:", err);
+    selectedBtn.classList.add("incorrect");
+  });
 }
+
 
 function nextQuestion() {
   if (questionIndex >= questions.length) {
@@ -207,17 +204,13 @@ function nextQuestion() {
   }
 
   const q = questions[questionIndex];
+
+  // Обновляем текст и таймер
   document.getElementById("question-text").textContent = qText(q, currentLang);
   document.getElementById("current-q").textContent = String(questionIndex + 1);
   document.getElementById("total-qs").textContent = String(questions.length);
 
-  const options = qOptions(q, currentLang);
-  renderOptions(options);
-
-  const correct = qCorrect(q, currentLang);
-
   let timer = Number(q.duration_seconds) > 0 ? Number(q.duration_seconds) : 15;
-
   const timerEl = document.getElementById("question-timer");
   const fmt = s => `00:${s < 10 ? '0' + s : s}`;
   timerEl.textContent = fmt(timer);
@@ -232,7 +225,28 @@ function nextQuestion() {
       nextQuestion();
     }
   }, 1000);
+
+  // 🧠 Разделяем по типу
+  if (q.type === "single") {
+    // ✅ есть варианты
+    const options = qOptions(q, currentLang);
+    renderOptions(options);
+  } else if (q.type === "open") {
+    // ❌ не вызываем renderOptions
+    // показываем textarea и кнопку
+    const textarea = document.getElementById("answer-textarea");
+    const submitBtn = document.getElementById("submit-answer-btn");
+    if (textarea && submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.onclick = async () => {
+        submitBtn.disabled = true;
+        await ApiClient.sendAnswer(telegramId, q.id, q.quiz_id, [textarea.value], currentLang);
+        setTimeout(() => { questionIndex++; nextQuestion(); }, 1000);
+      };
+    }
+  }
 }
+
 
 const defaultQuestions = [
   {
