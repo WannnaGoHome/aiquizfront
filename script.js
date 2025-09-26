@@ -69,7 +69,7 @@ function shuffle(input) {
 async function finishGamePhase() {
   try {
     //const events = await ApiClient.listEvents();
-    let phase= await ApiClient.getEventStatus(event_id);
+    let phase= await ApiClient.getEventStatus(event_id, telegramId);
     if (phase.game_status === "finished") {
       showState("finished");
     } else if (phase.game_status === "registration") {
@@ -96,7 +96,7 @@ async function checkAndStartGame() {
     const events = await ApiClient.listEvents();
     if (!events.length) return showState("waiting");
 
-    const eventStatus = await ApiClient.getEventStatus(event_id);
+    const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
     const quizzes = await ApiClient.listQuizzes(event_id);
     const activeQuiz = quizzes.find(q => q.is_active);
 
