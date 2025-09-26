@@ -57,6 +57,42 @@
         </div>
 
         <!-- 3. ЭКРАН ИГРЫ (СЕРДЦЕ ПРИЛОЖЕНИЯ) -->
+
+        <div id="state-game-open" class="state hidden">
+            <div class="container">
+                <!-- Верхний блок: Таймер и номер вопроса -->
+                <div class="question-header">
+                    <div id="question-timer" class="timer">20:00</div>
+                    <div id="question-progress">Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span></div>
+                </div>
+
+                <!-- Прогресс-бар -->
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Центральный блок: Текст вопроса -->
+                <div class="question-block">
+                    <h2 id="question-text">Текст текущего вопроса загружается...</h2>
+                </div>
+
+                <!-- Нижний блок: Форма ответа -->
+                <div class="answer-block">
+                    <textarea id="answer-textarea" placeholder="Введите ваш развернутый ответ здесь..." rows="5"></textarea>
+                    
+                    <div class="actions">
+                        <button id="submit-answer-btn" disabled>Отправить ответ</button>
+                        <div id="answer-status"></div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- 3. ЭКРАН ИГРЫ (СЕРДЦЕ ПРИЛОЖЕНИЯ) -->
         <div id="state-game" class="state hidden">
             <div class="container">
                 <!-- Верхний блок: Таймер и номер вопроса -->

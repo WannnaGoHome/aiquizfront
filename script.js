@@ -12,7 +12,6 @@ const tg = window.Telegram?.WebApp;
 tg?.expand();
 const telegramUser = tg?.initDataUnsafe?.user;
 const telegramId = telegramUser?.id;
-
 const registrationForm = document.getElementById("registration-form");
 const nicknameInput = document.getElementById("nickname-input");
 const registrationError = document.getElementById("registration-error");
@@ -38,7 +37,6 @@ registrationForm.addEventListener("submit", async (e) => {
   }
 });
 
-
 function showState(state) {
   // 1. Сначала скрываем все экраны
   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
@@ -59,22 +57,20 @@ function showState(state) {
 }
 
 function shuffle(array) {
-  for (let i = array.length -1; i>0; i--) {
+  const a = array.slice();
+  for (let i = a.length -1; i>0; i--) {
     const j = Math.floor(Math.random() * (i+1));
-    [array [i], array[j]] = [array[j], array[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return array;
+  return a;
 }
-
-
-let gameTimer = null;
 
 
 // ----------------- Функция перехода к следующей фазе события -----------------
 async function finishGamePhase() {
   try {
-    const events = await ApiClient.listEvents();
-    let phase= await ApiClient.getEventStatus();
+    //const events = await ApiClient.listEvents();
+    let phase= await ApiClient.getEventStatus(event_id);
     if (phase.game_status === "finished") {
       showState("finished");
     } else if (phase.game_status === "registration") {
@@ -91,6 +87,9 @@ async function finishGamePhase() {
 let questionIndex = 0;
 let questions = [];
 let intervalId = null;
+let gameTimer = null;            
+let currentLang = 'ru'; 
+let event_id = 1; //TODO 
 
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 async function checkAndStartGame() {
@@ -98,17 +97,15 @@ async function checkAndStartGame() {
     const events = await ApiClient.listEvents();
     if (!events.length) return showState("waiting");
 
-    const event = events.reduce((a,b) => a.id > b.id ? a : b);
-    const eventStatus = await ApiClient.getEventStatus(event.id);
+    // const event = events.reduce((a,b) => a.id > b.id ? a : b); TODO
+    const eventStatus = await ApiClient.getEventStatus(event_id);
+    const quizzes = await ApiClient.listQuizzes(event_id);
+    const activeQuiz = quizzes.find(q => q.is_active);
 
-    const quizzes = await ApiClient.listQuizzes();
-    const activeQuiz = quizzes.find(q => q.status ==="started");
-
-    
     if (eventStatus.game_status === "started" && activeQuiz) {
       showState("game");
-
-      questions = shuffle(await ApiClient.listQuestions(activeQuiz.id));
+      const raw = await ApiClient.listQuestions(activeQuiz.id);
+      questions = shuffle(raw);
       questionIndex = 0;
       nextQuestion();
       
@@ -121,29 +118,112 @@ async function checkAndStartGame() {
   }
 }
 
+function qText(q, lang) {
+  //q.text = {ru: "...", en: "..."};
+  if (q?.text?.[lang]) return q.text[lang];
+  if (q?.text?.ru) return q.text.ru;
+  const any = q && q.text && Object.values(q.text)[0];
+  return any ?? "";
+}
+
+function qOptions(q, lang) {
+  //q.options = {ru: ["..."], en: ["..."]};
+  if (q?.options?.[lang]) return q.options[lang];
+  if (q?.options?.ru) return q.options.ru;
+  const any = q && q.options && Object.values(q.options)[0];
+  return Array.isArray(any) ? any : [];
+}
+
+function qCorrect(q, lang) {
+  // q.correct_answers = {ru: ["..."], en: ["..."]}
+  if (q?.correct_answers?.[lang]) return q.correct_answers[lang];
+  if (q?.correct_answers?.ru) return q.correct_answers.ru;
+  const any = q && q.correct_answers && Object.values(q.correct_answers)[0];
+  return Array.isArray(any) ? any : [];
+}
+
+function renderOptions(options) {
+  const container = document.getElementById("options");
+  container.innerHTML = "";
+  options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    btn.dataset.index = i;
+    btn.textContent = opt;
+    btn.onclick = () => handleOptionClick(i);
+    container.appendChild(btn);
+  });
+}
+
+function handleOptionClick(index) {
+  const q = questions[questionIndex];
+  const options = qOptions(q, currentLang);
+  const chosen = options[index]; // выбранный вариант
+
+  const selectedBtn = document.querySelector(`.option[data-index="${index}"]`);
+  document.querySelectorAll(".option").forEach(btn => btn.disabled = true);
+
+  // Отправляем ответ на бэк
+  ApiClient.sendAnswer(
+    telegramId,     // ID пользователя
+    q.id,           // ID вопроса
+    q.quiz_id,      // ID викторины
+    [chosen],       // массив выбранных ответов
+    currentLang     // локаль (ru/en)
+  )
+    .then(res => {
+      console.log("Ответ отправлен:", res);
+
+      // Подсветка выбранного ответа
+      if (res.is_correct) {
+        selectedBtn.classList.add("correct"); // зелёный, если правильно
+      } else {
+        selectedBtn.classList.add("wrong");   // красный, если неправильно
+      }
+
+      // Переход к следующему вопросу через 1.5 секунды
+      setTimeout(() => {
+        questionIndex++;
+        nextQuestion();
+      }, 1500);
+    })
+    .catch(err => {
+      console.error("Ошибка при отправке ответа:", err);
+      selectedBtn.classList.add("wrong"); // красный при ошибке
+    });
+}
+
+
+
 function nextQuestion() {
   if (questionIndex >= questions.length) {
-    clearTimeout(gameTimer);
-    finishGamePhase(eventId);
-    clearTimeout(gameTimer);
-    clearInterval(intervalId);
+    if (gameTimer) clearTimeout(gameTimer);
+    if (intervalId) clearInterval(intervalId);
+    finishGamePhase(event_id);
     return;
   }
 
   const q = questions[questionIndex];
-  document.getElementById("question-text").textContent = q.text;
-  document.getElementById("current-q").textContent = questionIndex + 1;
-  document.getElementById("total-qs").textContent = totalQuestions.length;
+  document.getElementById("question-text").textContent = qText(q, currentLang);
+  document.getElementById("current-q").textContent = String(questionIndex + 1);
+  document.getElementById("total-qs").textContent = String(questions.length);
 
-  let timer = 15;
+  const options = qOptions(q, currentLang);
+  renderOptions(options);
 
-  document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
-  clearInterval(intervalId);
+  const correct = qCorrect(q, currentLang);
 
+  let timer = Number(q.duration_seconds) > 0 ? Number(q.duration_seconds) : 15;
+
+  const timerEl = document.getElementById("question-timer");
+  const fmt = s => `00:${s < 10 ? '0' + s : s}`;
+  timerEl.textContent = fmt(timer);
+
+  if (intervalId) clearInterval(intervalId);
   intervalId = setInterval(() => {
     timer--;
-    document.getElementById("question-timer").textContent = `00:${timer < 10 ? '0' + timer : timer}`;
-    if (timer <= 0){
+    timerEl.textContent = fmt(timer);
+    if (timer <= 0) {
       clearInterval(intervalId);
       questionIndex++;
       nextQuestion();

@@ -1,23 +1,6 @@
-const API_BASE = "https://a7606a666e47.ngrok-free.app";
+const API_BASE = "https://56de7dc3b07a.ngrok-free.app";
 
 const ApiClient = {
-  // registerUser: async (telegramId, nickname) => {
-  //   try {
-  //     const res = await fetch(`${API_BASE}/users/register`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ telegram_id: telegramId, nickname })
-  //     });
-  //     if (!res.ok) {
-  //       const err = await res.json();
-  //       throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка регистрации");
-  //     }
-  //     return await res.json();
-  //   } catch (e) {
-  //     console.error("API registerUser error:", e);
-  //     throw e;
-  //   }
-  // },
 
   getUser: async (telegram_id) => {
     try {
@@ -25,7 +8,7 @@ const ApiClient = {
         method: "GET",
         headers: { "Accept": "application/json",
         "ngrok-skip-browser-warning": "1"
-        }, // явно просим JSON
+        },
       });
 
       const contentType = res.headers.get("content-type") || "";
@@ -60,7 +43,7 @@ const ApiClient = {
         headers: { 
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "ngrok-skip-browser-warning": "1" // явно просим JSON
+          "ngrok-skip-browser-warning": "1"
         },
         body: JSON.stringify({ telegram_id: telegramId, nickname })
       });
@@ -112,7 +95,11 @@ const ApiClient = {
     try {
       const res = await fetch(`${API_BASE}/users/check_admin`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "ngrok-skip-browser-warning": "1"
+        },
         body: JSON.stringify({ telegram_id })
       });
       if (!res.ok) {
@@ -126,23 +113,33 @@ const ApiClient = {
     }
   },
 
-    getEventStatus: async (eventId) => {
+  getEventStatus: async (eventId) => {
       try {
-          const res = await fetch(`${API_BASE}/events/${eventId}`, { method: "GET" });
-          if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения статуса события");
-          }
-          return await res.json();
+          const res = await fetch(`${API_BASE}/events/${eventId}?telegram_id=${telegramId}`, { 
+            method: "GET",
+            headers: { "Accept": "application/json",
+            "ngrok-skip-browser-warning": "1"
+          },
+        });
+        if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения статуса события");
+        }
+        return await res.json();
       } catch (e) {
           console.error("API getEventStatus error:", e);
           throw e;
       }
-    },
+  },
 
-    listQuizzes: async () => {
+  listQuizzes: async (eventId) => {
       try {
-        const res =  await fetch(`${API_BASE}/quizes/list`, {method: "GET"});
+        const res =  await fetch(`${API_BASE}/quizes/quizes/by-event/${eventId}`, {
+          method: "GET", 
+          headers: { "Accept": "application/json",
+            "ngrok-skip-browser-warning": "1"
+          },
+        });
         if (!res.ok) {
           const err = await res.json();
           throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения списка викторин");
@@ -152,11 +149,16 @@ const ApiClient = {
         console.error("API listQuiz error:", e);
         throw e;
       }
-    },
+  },
 
-    listQuestions: async (quizId) => {
+  listQuestions: async (quizId) => {
       try {
-        const res = await fetch(`${API_BASE}/quizes/${quizId}`);
+        const res = await fetch(`${API_BASE}/quizes/${quizId}`, {
+          method: "GET", 
+          headers: { "Accept": "application/json",
+            "ngrok-skip-browser-warning": "1"
+          },
+        });
         if (!res.ok) {
           const err = await res.json();
           throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения вопросов");
@@ -166,12 +168,16 @@ const ApiClient = {
         console.error("API listQuestions error:", e);
         throw e;
       }
-    },
-
+  },
 
   listEvents: async () => {
     try {
-      const res = await fetch(`${API_BASE}/events/`, { method: "GET" });
+      const res = await fetch(`${API_BASE}/events/`, {
+        method: "GET", 
+        headers: { "Accept": "application/json",
+          "ngrok-skip-browser-warning": "1"
+        },
+      });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения списка событий");
@@ -183,19 +189,27 @@ const ApiClient = {
     }
   },
 
-
-  sendAnswer: async (telegramId, questionId, answer) => {
+  sendAnswer: async (telegramId, questionId, quizId, answers, locale) => {
     try {
       const res = await fetch(`${API_BASE}/quizes/answers?telegram_id=${telegramId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({question_id: questionId, answers: [answer] })
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "ngrok-skip-browser-warning": "1"
+        },
+        body: JSON.stringify({
+          "question_id": questionId,
+          "quiz_id": quizId,
+          "answers": answers,
+          "locale": locale,
+        })
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка отправки ответа");
       }
-      return await res.json(); // {user_id, answer, id, question_id}
+      return await res.json();
     } catch (e) {
       console.error("API createUserAnswer error:", e);
       throw e;
