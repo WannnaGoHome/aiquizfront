@@ -30,6 +30,7 @@
   --shadow-lg: 0 8px 30px rgba(21, 101, 192, 0.16);
 }
 
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -88,6 +89,7 @@ body {
   display: none;
 }
 
+/* ===== ТИПОГРАФИКА ===== */
 h1 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -95,35 +97,41 @@ h1 {
   margin-bottom: 1rem;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 h2 {
-  color: #1565c0; /* акцент */
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1565c0;
+}
+
+h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1565c0;
 }
 
 p {
+  margin-bottom: 1rem;
   color: var(--tg-hint-color);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 /* ===== КАРТОЧКИ И КОНТЕЙНЕРЫ ===== */
-.card,
-input,
-textarea {
+.card {
   background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
 }
-
-input:focus,
-textarea:focus {
-  border-color: #42a5f5;
-  box-shadow: 0 0 6px rgba(66, 165, 245, 0.3);
-}
-
 
 .card:hover {
   box-shadow: var(--shadow-md);
@@ -134,6 +142,25 @@ textarea:focus {
 /* ===== ФОРМЫ И ИНПУТЫ ===== */
 .form-group {
   margin-bottom: 1.5rem;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e1f5fe;
+  border-radius: 16px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  color: black;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #42a5f5;
+  box-shadow: 0 0 0 3px rgba(64, 167, 227, 0.1);
+  transform: rgba(255, 255, 255, 1);
 }
 
 input::placeholder, textarea::placeholder {
@@ -147,19 +174,23 @@ textarea {
 }
 
 /* ===== КНОПКИ ===== */
-button,
 .btn {
-  background: var(--accent-gradient);
-  color: #fff;
-  box-shadow: var(--shadow-md);
+  display: inline-block;
+  padding: 16px 32px;
   border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--accent-gradient);
+  color: white;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
 }
-
-button:hover {
-  background: var(--dark-gradient);
-  transform: translateY(-2px);
-}
-
 
 .btn:before {
   content: '';
@@ -433,7 +464,25 @@ button:hover {
 .delay-3 { animation-delay: 0.3s; }
 
 /* ===== УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ ВСЕХ КНОПОК ===== */
-
+button {
+    display: inline-block;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--accent-gradient);
+    color: var(--tg-button-text-color);
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 1rem;
+}
 
 button:hover {
     transform: translateY(-2px);
