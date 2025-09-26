@@ -65,7 +65,6 @@ function shuffle(array) {
   return a;
 }
 
-
 // ----------------- Функция перехода к следующей фазе события -----------------
 async function finishGamePhase() {
   try {

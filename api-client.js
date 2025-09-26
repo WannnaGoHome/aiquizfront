@@ -107,6 +107,7 @@ const ApiClient = {
         throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка проверки админа");
       }
       return await res.json();
+      
     } catch (e) {
       console.error("API checkAdmin error:", e);
       throw e;
