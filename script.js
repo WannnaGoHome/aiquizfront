@@ -93,8 +93,8 @@ let event_id = 1; //TODO
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 async function checkAndStartGame() {
   try {
-    const events = await ApiClient.listEvents();
-    if (!events.length) return showState("waiting");
+    // const events = await ApiClient.listEvents();
+    // if (!events.length) return showState("waiting");
 
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
     const quizzes = await ApiClient.listQuizzes(event_id);
