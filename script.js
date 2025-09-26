@@ -92,11 +92,18 @@ async function checkAndStartGame() {
     if (eventStatus.game_status === "started") {
       console.log("🎮 Игра началась — загружаем локальные вопросы...");
 
-      // ⬇️ Используем локальные вопросы из JSON
-      const raw = defaultQuestionsFromJson.items; // items из твоего JSON
+      // ⬇️ Берём локальные вопросы и добавляем id + quiz_id
+      const raw = defaultQuestionsFromJson.items.map((q, i) => ({
+        ...q,
+        id: i + 1,
+        quiz_id: 1
+      }));
+
+      // Перемешиваем
       questions = shuffle(raw);
       questionIndex = 0;
 
+      // Определяем тип первого вопроса и показываем нужный экран
       const firstType = questions[0]?.type;
       if (firstType === "open") {
         showState("game-open");
@@ -104,6 +111,7 @@ async function checkAndStartGame() {
         showState("game");
       }
 
+      // Запускаем первый вопрос
       nextQuestion();
     } else {
       showState("waiting");
@@ -112,6 +120,7 @@ async function checkAndStartGame() {
     console.error("Произошла ошибка при запуске игры:", e);
   }
 }
+
 
 const defaultQuestionsFromJson = {
   items: [
