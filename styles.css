@@ -37,6 +37,10 @@
   }
   body { 
     background-image: url("./app_background_dark.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 }
 

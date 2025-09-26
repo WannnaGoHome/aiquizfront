@@ -100,7 +100,7 @@ async function checkAndStartGame() {
       const raw = shuffled.slice(0, 10).map((q, i) => ({
         ...q,
         id: i + 1,
-        quiz_id: 3
+        quiz_id: 1
       }));
 
       questions = raw;
@@ -418,7 +418,7 @@ let questions = [];
 let intervalId = null;
 let gameTimer = null;            
 let currentLang = 'ru'; 
-let event_id = 3; //TODO 
+let event_id = 1; //TODO 
 
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 // async function checkAndStartGame() {
