@@ -100,7 +100,7 @@ async function checkAndStartGame() {
       const raw = shuffled.slice(0, 10).map((q, i) => ({
         ...q,
         id: i + 1,
-        quiz_id: 1
+        quiz_id: 2
       }));
 
       questions = raw;
@@ -418,7 +418,7 @@ let questions = [];
 let intervalId = null;
 let gameTimer = null;            
 let currentLang = 'ru'; 
-let event_id = 1; //TODO 
+let event_id = 2; //TODO 
 
 // ----------------- Автоматическая проверка статуса и старт игры -----------------
 // async function checkAndStartGame() {
@@ -537,14 +537,12 @@ function handleOptionClick(index) {
     });
 }
 
-
 function qs(id) {
   return document.querySelector(`#state-${appState.currentState} #${id}`);
 }
 function qsa(sel) {
   return document.querySelectorAll(`#state-${appState.currentState} ${sel}`);
 }
-
 
 function nextQuestion() {
   if (questionIndex >= questions.length) {
@@ -592,7 +590,6 @@ function nextQuestion() {
     }
   }
 }
-
 
 const defaultQuestions = [
     {
@@ -892,7 +889,6 @@ function logout() {
   showState('registration');
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
   setInterval(async () => {
     try {
@@ -902,3 +898,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 5000);
 });
+
