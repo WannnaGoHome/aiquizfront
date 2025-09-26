@@ -90,19 +90,20 @@ async function checkAndStartGame() {
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
 
     if (eventStatus.game_status === "started") {
-      // ⚙️ Проверка: если уже начали — ничего не делаем
-      if (gameStarted) return;
+      if (gameStarted) return; // защита от повторного запуска
+      console.log("🎮 Игра началась — загружаем 10 случайных вопросов...");
 
-      console.log("🎮 Игра началась — загружаем локальные вопросы...");
-      gameStarted = true; // ✅ ставим флаг
+      gameStarted = true;
 
-      const raw = defaultQuestionsFromJson.items.map((q, i) => ({
+      // ✅ Берём 10 случайных вопросов
+      const shuffled = shuffle(defaultQuestionsFromJson.items);
+      const raw = shuffled.slice(0, 10).map((q, i) => ({
         ...q,
         id: i + 1,
         quiz_id: 1
       }));
 
-      questions = shuffle(raw);
+      questions = raw;
       questionIndex = 0;
 
       const firstType = questions[0]?.type;
@@ -110,7 +111,6 @@ async function checkAndStartGame() {
 
       nextQuestion();
     } else {
-      // если статус не "started", сбрасываем флаг, но НЕ перезапускаем игру
       if (!gameStarted && appState.currentState !== "waiting") {
         showState("waiting");
       }
@@ -119,7 +119,6 @@ async function checkAndStartGame() {
     console.error("Произошла ошибка при запуске игры:", e);
   }
 }
-
 
 const defaultQuestionsFromJson = {
   items: [
