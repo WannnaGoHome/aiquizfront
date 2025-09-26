@@ -170,11 +170,12 @@ const ApiClient = {
       }
   },
 
-  listEvents: async () => {
+  listEvents: async (telegram_id) => {
     try {
-      const res = await fetch(`${API_BASE}/events/`, {
+      const res = await fetch(`${API_BASE}/events/?telegram_id=${telegram_id}`, {
         method: "GET", 
-        headers: { "Accept": "application/json",
+        headers: { 
+          "Accept": "application/json",
           "ngrok-skip-browser-warning": "1"
         },
       });
