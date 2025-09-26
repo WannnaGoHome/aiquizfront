@@ -118,7 +118,8 @@ async function checkAndStartGame() {
     }
   } catch (e) {
     console.error("Произошла ошибка при запуске игры:", e);
-    document.getElementById("admin-notification")?.textContent = "Ошибка: " + e.message;
+    const adminEl = document.getElementById("admin-notification");
+    if (adminEl) adminEl.textContent = "Ошибка: " + e.message;
   }
 }
 
