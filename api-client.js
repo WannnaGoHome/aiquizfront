@@ -38,7 +38,7 @@ const ApiClient = {
 
   registerUser: async (telegramId, nickname) => {
     try {
-      const res = await fetch(`${API_BASE}/users/register/1234`, {
+      const res = await fetch(`${API_BASE}/users/register/?telegram_id=1234`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
