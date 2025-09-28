@@ -152,9 +152,9 @@ const ApiClient = {
       }
   },
 
-  listQuestions: async (quizId) => {
+  listQuestions: async (quizId, locale, include_correct, telegram_id) => {
   try {
-    const res = await fetch(`${API_BASE}/quizes/${quizId}`, {
+    const res = await fetch(`${API_BASE}/quizes/${quizId}/questions?locale=${locale}&include_correct=${include_correct}&telegram_id=${telegram_id}`, {
       headers: {
         "Accept": "application/json",
         "ngrok-skip-browser-warning": "1"
