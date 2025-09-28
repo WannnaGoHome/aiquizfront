@@ -10,6 +10,10 @@ let appState = {
 
 const tg = window.Telegram?.WebApp;
 tg?.expand();
+document.documentElement.dataset.theme = tg?.colorScheme === 'dark' ? 'dark' : 'light';
+tg?.onEvent('themeChanged', () => {
+  document.documentElement.dataset.theme = tg?.colorScheme === 'dark' ? 'dark' : 'light';
+});
 const telegramUser = tg?.initDataUnsafe?.user;
 const telegramId = telegramUser?.id;
 const registrationForm = document.getElementById("registration-form");
@@ -406,7 +410,7 @@ async function checkAndStartGame() {
           quiz_id: activeQuiz.id
         }));
         
-        questions = shuffle(preparedQuestions);
+        questions = shuffle(preparedQuestions).slice(0, 10);
         questionIndex = 0;
 
         const firstType = questions[0]?.type;

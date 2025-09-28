@@ -30,7 +30,7 @@
   --shadow-lg: 0 8px 30px rgba(21, 101, 192, 0.16);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --glass-bg: rgba(0, 0, 0, 0.25);
     --glass-border: rgba(255, 255, 255, 0.15);
@@ -42,7 +42,24 @@
     background-attachment: fixed;
     background-repeat: no-repeat;
   }
+
+  .timer-badge {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 10px 20px;
+  }
+
+  .timer {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1565c0 !important;
+  text-shadow: none;
 }
+  #question-progress {
+    color: #1565c0 !important;
+    font-weight: 600;
+  }
+} */
 
 
 * {
@@ -778,4 +795,19 @@ form button {
         padding: 14px 16px;
         font-size: 15px;
     }
+}
+
+html[data-theme="light"] body {
+  background-image: url("./app_background.jpg") !important;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+html[data-theme="dark"] body {
+  background-image: url("./app_background_dark.png") !important;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
