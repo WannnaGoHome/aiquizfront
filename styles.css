@@ -69,11 +69,11 @@
 }
 
 body {
-  background-image: url("./app_background.jpg");
+  /* background-image: url("./app_background.jpg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-repeat: no-repeat; */
 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   /* background: linear-gradient(135deg, #f5f7ff 0%, #e3f2fd 100%); */
@@ -196,6 +196,22 @@ input:focus, textarea:focus {
 
 input::placeholder, textarea::placeholder {
   color: #90a4ae;
+}
+.timer-badge {
+  background: rgba(255,255,255,0.85);
+  border-radius: 20px;
+  padding: 10px 20px;
+}
+
+.timer {
+  font-weight: 700;
+  color: #1565c0 !important;
+  text-shadow: none;
+}
+
+#question-progress {
+  color: #1565c0 !important;
+  font-weight: 600;
 }
 
 textarea {
