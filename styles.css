@@ -212,6 +212,7 @@ input::placeholder, textarea::placeholder {
 #question-progress {
   color: #1565c0 !important;
   font-weight: 600;
+  text-shadow: none;
 }
 
 textarea {
@@ -375,12 +376,15 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px;
+  background: transparent;
+  padding: 0 0 12px 0;
   border-radius: 20px;
   border: 1px solid #064461;
   margin-bottom: 2rem;
   box-shadow: var(--shadow-sm);
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
 }
 
 .question-progress {
@@ -419,6 +423,15 @@ textarea {
 .winner-card h2 {
   color: white;
   margin-bottom: 1rem;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
 }
 
 .prize-info {
@@ -467,11 +480,6 @@ textarea {
     font-size: 2rem;
   }
   
-  .question-header {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
-  }
   
   .answer-actions {
     flex-direction: column;
@@ -826,4 +834,22 @@ html[data-theme="dark"] body {
   background-position: center;
   background-attachment: fixed;
   background-repeat: no-repeat;
+}
+
+html[data-theme="light"] {
+  --panel-bg: rgba(255, 255, 255, 0.90);
+  --panel-border: rgba(6, 68, 97, 0.20);
+  --panel-text: #1565c0;
+}
+
+/* Тёмная тема: гармоничная полупрозрачная подложка */
+html[data-theme="dark"] {
+  /* можно поиграть непрозрачностью 0.55–0.70 */
+  --panel-bg: rgba(8, 14, 26, 0.60);           /* тёмное стекло */
+  --panel-border: rgba(255, 255, 255, 0.12);    /* тонкая светлая рамка */
+  --panel-text: #e3f2fd;                        /* читабельный голубовато-белый */
+}
+
+.question-card h2 {
+  font-weight: 600;
 }
