@@ -18,6 +18,19 @@
                 
                 <form id="registration-form">
                     <input type="text" id="nickname-input" placeholder="Enter nickname" maxlength="20" required>
+                    <div class="lang-select">
+                        <h3>Выберите язык / Select language</h3>
+                        <div class="lang-options">
+                        <label class="lang-option">
+                            <input type="radio" name="lang" value="ru" id="lang-ru" checked>
+                            <span>Русский</span>
+                        </label>
+                        <label class="lang-option">
+                            <input type="radio" name="lang" value="en" id="lang-en">
+                            <span>English</span>
+                        </label>
+                        </div>
+                    </div>
                     <button type="submit" id="register-btn">Участвовать!</button>
                 </form>
 

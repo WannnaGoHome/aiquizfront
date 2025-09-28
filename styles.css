@@ -376,7 +376,7 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: transparent;
+  background: rgba(6, 68, 97, 0.5);
   padding: 0 0 12px 0;
   border-radius: 20px;
   border: 1px solid #064461;
@@ -852,4 +852,56 @@ html[data-theme="dark"] {
 
 .question-card h2 {
   font-weight: 600;
+}
+
+.lang-select {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.lang-select h3 {
+  font-size: 1rem;
+  color: var(--tg-text-color);
+  margin-bottom: 0.8rem;
+}
+
+.lang-options {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--tg-secondary-bg);
+  border: 2px solid var(--tg-border-color);
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+}
+
+.lang-option:hover {
+  border-color: var(--tg-button-color);
+  transform: translateY(-2px);
+}
+
+.lang-option input {
+  accent-color: var(--tg-button-color);
+  transform: scale(1.2);
+}
+
+html[data-theme="dark"] .lang-option {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.lang-option span {
+  color: var(--tg-text-color);
+  font-weight: 500;
+  user-select: none;
 }
