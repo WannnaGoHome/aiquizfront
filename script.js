@@ -1,4 +1,160 @@
+// ==== Telegram WebApp и тема ====
+const tg = window.Telegram?.WebApp;
+tg?.expand();
 
+function applyTheme() {
+  document.documentElement.dataset.theme = tg?.colorScheme === 'dark' ? 'dark' : 'light';
+}
+applyTheme();
+tg?.onEvent('themeChanged', applyTheme);
+
+// ==== Пользователь Telegram ====
+const telegramUser = tg?.initDataUnsafe?.user;
+const telegramId = telegramUser?.id;
+
+// ==== I18N словарь ====
+const I18N = {
+  ru: {
+    app: { title: "🎯 Квиз-игра" },
+    registration: {
+      subtitle: "Зарегистрируйтесь для участия. Введите ваше имя и фамилию:",
+      nickname_ph: "Введите никнейм",
+      choose_lang: "Выберите язык / Select language",
+      lang_ru: "Русский",
+      lang_en: "English",
+      join_btn: "Участвовать!"
+    },
+    waiting: {
+      title: "Ожидаем начала игры",
+      nickname_label: "Ваш никнейм:",
+      wait_text: "Как только админ запустит игру, здесь появится первый вопрос. Оставайтесь на связи!"
+    },
+    waiting_results: {
+      title: "Ожидаем…",
+      nickname_label: "Ваш никнейм:",
+      text: "Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа!"
+    },
+    common: {
+      logout: "Выйти и сменить никнейм"
+    },
+    game: {
+      question_label: "Вопрос",
+      loading_question: "Текст текущего вопроса загружается...",
+      answer_ph: "Введите ваш развернутый ответ здесь...",
+      submit: "Отправить ответ"
+    },
+    between: {
+      title: "Ответ принят!",
+      next_in: "Следующий вопрос появится через <span id=\"between-timer\">5</span> секунд...",
+      stay_tuned: "Оставайтесь с нами! Вы стали на шаг ближе к победе..."
+    },
+    finished: {
+      title: "Игра завершена!",
+      thanks: "Спасибо за ваши ответы и участие!",
+      processing: "Сейчас наш ИИ-ассистент анализирует результаты. Итоги и список победителей будут опубликованы здесь позже."
+    },
+    winner: {
+      title: "Поздравляем!",
+      text: "Ваши ответы были одними из самых лучших! Вы вошли в число победителей!",
+      prize_title: "Ваш приз:",
+      prize_text: "Подойдите к стойке организаторов на первом этаже и назовите свой никнейм <strong id=\"winner-nickname\"></strong> для получения заслуженной награды.",
+      thanks_again: "Еще раз спасибо за участие!"
+    }
+  },
+  en: {
+    app: { title: "🎯 Quiz Game" },
+    registration: {
+      subtitle: "Register to join. Enter your first and last name:",
+      nickname_ph: "Enter nickname",
+      choose_lang: "Select language / Выберите язык",
+      lang_ru: "Русский",
+      lang_en: "English",
+      join_btn: "Join!"
+    },
+    waiting: {
+      title: "Waiting to start",
+      nickname_label: "Your nickname:",
+      wait_text: "As soon as the admin starts the game, the first question will appear here. Stay tuned!"
+    },
+    waiting_results: {
+      title: "Waiting…",
+      nickname_label: "Your nickname:",
+      text: "When the game ends, we'll count the points and announce the stage results!"
+    },
+    common: {
+      logout: "Log out & change nickname"
+    },
+    game: {
+      question_label: "Question",
+      loading_question: "Loading the current question...",
+      answer_ph: "Type your detailed answer here...",
+      submit: "Submit answer"
+    },
+    between: {
+      title: "Answer received!",
+      next_in: "Next question in <span id=\"between-timer\">5</span> sec...",
+      stay_tuned: "Stay with us! You are one step closer to victory..."
+    },
+    finished: {
+      title: "Game finished!",
+      thanks: "Thanks for your answers and participation!",
+      processing: "Our AI assistant is analyzing results. Winners will be published here soon."
+    },
+    winner: {
+      title: "Congratulations!",
+      text: "Your answers were among the best! You made it to the winners!",
+      prize_title: "Your prize:",
+      prize_text: "Please come to the organizers' desk on the first floor and say your nickname <strong id=\"winner-nickname\"></strong> to receive the prize.",
+      thanks_again: "Thanks again for participating!"
+    }
+  }
+};
+
+// Утилиты i18n
+const t = (keyPath, lang) => {
+  const l = lang || (window.appState?.lang) || 'ru';
+  return keyPath.split('.').reduce((acc, k) => acc?.[k], I18N[l]) ?? '';
+};
+
+// Применение переводов к DOM
+function applyTranslations(root = document) {
+  const lang = appState.lang || 'ru';
+
+  // data-i18n (innerHTML)
+  root.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key, lang);
+    if (val) el.innerHTML = val;
+  });
+
+  // data-i18n-placeholder
+  root.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const val = t(key, lang);
+    if (val) el.setAttribute('placeholder', val);
+  });
+
+  // Заголовок страницы
+  const titleEl = document.querySelector('head title[data-i18n="app.title"]');
+  if (titleEl) titleEl.textContent = t('app.title', lang);
+
+  // Строка "Вопрос X/Y" — строим заново на текущем экране
+  updateQuestionProgressLabel();
+}
+
+// Отрисовка "Вопрос/Question X/Y"
+function updateQuestionProgressLabel() {
+  const container = document.querySelector(`#state-${appState.currentState} #question-progress`);
+  const curEl = document.querySelector(`#state-${appState.currentState} #current-q`);
+  const totEl = document.querySelector(`#state-${appState.currentState} #total-qs`);
+  if (!container) return;
+
+  const current = curEl ? curEl.textContent : '1';
+  const total = totEl ? totEl.textContent : '1';
+  container.innerHTML = `${t('game.question_label')} <span id="current-q">${current}</span>/<span id="total-qs">${total}</span>`;
+}
+
+// ==== Состояние приложения ====
 let appState = {
   currentState: 'registration',
   userId: null,
@@ -7,32 +163,49 @@ let appState = {
   lang: localStorage.getItem('lang') || (tg?.initDataUnsafe?.user?.language_code?.startsWith('ru') ? 'ru' : 'en'),
 };
 
-// const ADMIN_IDS = [707309709, 1046929828]; 
+function syncHtmlLang() {
+  const lang = appState.lang || 'ru';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = ['ar','he','fa','ur'].includes(lang) ? 'rtl' : 'ltr';
+}
+syncHtmlLang();
+applyTranslations(document); // первичное применение переводов
 
-const tg = window.Telegram?.WebApp;
-tg?.expand();
-document.documentElement.dataset.theme = tg?.colorScheme === 'dark' ? 'dark' : 'light';
-tg?.onEvent('themeChanged', () => {
-  document.documentElement.dataset.theme = tg?.colorScheme === 'dark' ? 'dark' : 'light';
-});
-const telegramUser = tg?.initDataUnsafe?.user;
-const telegramId = telegramUser?.id;
+// ==== Элементы регистрации ====
 const registrationForm = document.getElementById("registration-form");
 const nicknameInput = document.getElementById("nickname-input");
 const registrationError = document.getElementById("registration-error");
 
+// Живое переключение языка до регистрации
+document.addEventListener('change', (e) => {
+  if (e.target && e.target.name === 'lang') {
+    appState.lang = e.target.value.toLowerCase();
+    localStorage.setItem('lang', appState.lang);
+    syncHtmlLang();
+    applyTranslations(document);
+  }
+});
+
 registrationForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const nickname = nicknameInput.value.trim();
+  const lang = (new FormData(registrationForm).get('lang') || appState.lang || 'ru').toLowerCase();
   if (!nickname) return;
 
   try {
     registrationError.classList.add("hidden");
     console.log("🚀 Начало процесса регистрации/авторизации...");
+
     const userData = await ApiClient.registerOrGetUser(telegramId, nickname);
-    appState.userId=userData.userId;
-    appState.userNickname=userData.nickname;
-    appState.points=userData.points;
+
+    appState.userId = userData.userId;
+    appState.userNickname = userData.nickname;
+    appState.points = userData.points;
+    appState.lang = lang;
+    localStorage.setItem('lang', appState.lang);
+    syncHtmlLang();
+    applyTranslations(document);
+
     console.log("✅ Пользователь вошёл:", appState);
     showState('waiting');
   } catch (err) {
@@ -42,27 +215,25 @@ registrationForm.addEventListener("submit", async (e) => {
   }
 });
 
+// ==== Навигация по экранам ====
 function showState(state) {
-  // 1. Сначала скрываем все экраны
   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
-  
-  // 2. Находим элемент (экран) по id, например state-registration, state-admin, state-waiting
+
   const el = document.getElementById(`state-${state}`);
   if (el) el.classList.remove("hidden");
 
-  // 3. Ищем внутри выбранного экрана все элементы, у которых id заканчивается на "nickname"
-  const nicknameElements = el.querySelectorAll("[id$='nickname']");
-  nicknameElements.forEach(elm => {
-    // Записываем в них nickname из текущего состояния приложения
-    elm.textContent = appState.userNickname;
-  });
-  
-  // 4. Обновляем текущее состояние приложения
+  const nicknameElements = el?.querySelectorAll("[id$='nickname']") || [];
+  nicknameElements.forEach(elm => { elm.textContent = appState.userNickname; });
+
   appState.currentState = state;
+
+  // Применяем перевод к новому экрану
+  applyTranslations(el);
 }
 
+// ==== Вспомогательные ====
 function shuffle(input) {
-  const a = Array.isArray(input) ? input.slice() : [input]; // защита
+  const a = Array.isArray(input) ? input.slice() : [input];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
@@ -70,11 +241,11 @@ function shuffle(input) {
   return a;
 }
 
-// ----------------- Функция перехода к следующей фазе события -----------------
+// ==== Завершение фазы ====
 async function finishGamePhase() {
   try {
     const event_id = await getActiveEventId(telegramId);
-    let phase= await ApiClient.getEventStatus(event_id, telegramId);
+    let phase = await ApiClient.getEventStatus(event_id, telegramId);
     if (phase.game_status === "finished") {
       showState("finished");
     } else if (phase.game_status === "registration") {
@@ -84,22 +255,20 @@ async function finishGamePhase() {
     }
   } catch (e) {
     console.error("Ошибка завершения фазы:", e);
-    document.getElementById("admin-notification").textContent = "Ошибка завершения фазы: " + e.message;
+    const adminEl = document.getElementById("admin-notification");
+    if (adminEl) adminEl.textContent = "Ошибка завершения фазы: " + e.message;
   }
 }
 
-let gameStarted = false; // 🧠 глобальный флаг
-
-
+let gameStarted = false;
 let questionIndex = 0;
 let questions = [];
 let intervalId = null;
-let gameTimer = null;     
+let gameTimer = null;
 let currentLang = appState.lang;
 
-// ----------------- Автоматическая проверка статуса и старт игры -----------------
+// ==== Автостарт игры ====
 async function checkAndStartGame() {
-  // если мы ждём результаты или уже всё завершено — ничего не делаем
   if (appState.currentState === 'waiting-results' || appState.currentState === 'finished') return;
 
   try {
@@ -111,14 +280,11 @@ async function checkAndStartGame() {
     if (eventStatus.game_status === "started" && activeQuiz) {
       if (appState.currentState !== 'game' && appState.currentState !== 'game-open') {
         console.log("🎯 Активный квиз:", activeQuiz);
+        currentLang = appState.lang;
 
-        // 🔹 Загружаем вопросы с бэка
         const rawQuestions = await ApiClient.listQuestions(activeQuiz.id, currentLang, true, telegramId);
-        const preparedQuestions = rawQuestions.map(q => ({
-          ...q,
-          quiz_id: activeQuiz.id
-        }));
-        
+        const preparedQuestions = rawQuestions.map(q => ({ ...q, quiz_id: activeQuiz.id }));
+
         questions = shuffle(preparedQuestions).slice(0, 10);
         questionIndex = 0;
 
@@ -136,19 +302,18 @@ async function checkAndStartGame() {
   }
 }
 
+// ==== Получение текста/опций вопроса с учетом локали ====
 function qText(q) {
-  return q?.text || "";
+  const lang = appState.lang || 'ru';
+  return q?.text_i18n?.[lang] ?? q?.text ?? "";
 }
-
 function qOptions(q) {
-  return Array.isArray(q?.options) ? q.options : [];
+  const lang = appState.lang || 'ru';
+  return Array.isArray(q?.options_i18n?.[lang])
+    ? q.options_i18n[lang]
+    : Array.isArray(q?.options) ? q.options : [];
 }
-
-// Пока бекенд не отдаёт is_correct
-function qCorrect(q) {
-  return [];
-}
-
+function qCorrect(q) { return []; } // заглушка
 
 function renderOptions(options) {
   const container = qs("options");
@@ -169,11 +334,9 @@ async function getActiveEventId(telegramId) {
     const events = await ApiClient.listEvents(telegramId);
     if (!events || !events.length) throw new Error("Нет доступных событий");
 
-    // 🔹 1. Сначала пробуем найти начатое
     const active = events.find(e => e.game_status === "started");
     if (active) return active.id;
 
-    // 🔹 2. Если нет начатых — возвращаем с максимальным id
     const latest = events.reduce((max, e) => e.id > max.id ? e : max, events[0]);
     return latest.id;
   } catch (err) {
@@ -181,7 +344,6 @@ async function getActiveEventId(telegramId) {
     return 1; // fallback
   }
 }
-
 
 async function handleOptionClick(index) {
   const q = questions[questionIndex];
@@ -194,8 +356,8 @@ async function handleOptionClick(index) {
   try {
     const res = await ApiClient.sendAnswer(
       telegramId,
-      q.id,         // question_id
-      q.quiz_id ?? 1,  // quiz_id — если нет в вопросе, подставь 1
+      q.id,
+      q.quiz_id ?? 1,
       [chosen],
       currentLang
     );
@@ -212,7 +374,6 @@ async function handleOptionClick(index) {
   }, 1500);
 }
 
-
 function qs(id) {
   return document.querySelector(`#state-${appState.currentState} #${id}`);
 }
@@ -220,11 +381,12 @@ function qsa(sel) {
   return document.querySelectorAll(`#state-${appState.currentState} ${sel}`);
 }
 
+// ==== Переход к следующему вопросу ====
 function nextQuestion() {
   if (questionIndex >= questions.length) {
     if (gameTimer) clearTimeout(gameTimer);
     if (intervalId) clearInterval(intervalId);
-    finishGamePhase(event_id);
+    finishGamePhase();
     return;
   }
 
@@ -236,9 +398,12 @@ function nextQuestion() {
   const timerEl = qs("question-timer");
   if (!qTextEl || !curEl || !totEl || !timerEl) return;
 
-  qTextEl.textContent = qText(q, currentLang);
+  // Заголовок/строка «Вопрос X/Y» на текущем языке
   curEl.textContent = String(questionIndex + 1);
   totEl.textContent = String(questions.length);
+  updateQuestionProgressLabel();
+
+  qTextEl.textContent = qText(q, currentLang);
 
   let timer = Number(q.duration_seconds) > 0 ? Number(q.duration_seconds) : 15;
   const fmt = s => `00:${s < 10 ? '0' + s : s}`;
@@ -257,6 +422,10 @@ function nextQuestion() {
     const textarea = qs("answer-textarea");
     const submitBtn = qs("submit-answer-btn");
     if (textarea && submitBtn) {
+      // Обновим плейсхолдер и подпись кнопки под язык
+      textarea.setAttribute('placeholder', t('game.answer_ph'));
+      submitBtn.textContent = t('game.submit');
+
       submitBtn.disabled = false;
       submitBtn.onclick = async () => {
         submitBtn.disabled = true;
@@ -267,6 +436,7 @@ function nextQuestion() {
   }
 }
 
+// ==== Выход ====
 function logout() {
   appState.userId = null;
   appState.userNickname = '';
@@ -274,12 +444,16 @@ function logout() {
   showState('registration');
 }
 
+// ==== Инициализация ====
 document.addEventListener("DOMContentLoaded", () => {
   const ru = document.getElementById('lang-ru');
   const en = document.getElementById('lang-en');
   if (ru && en) {
     (appState.lang === 'ru' ? ru : en).checked = true;
   }
+
+  // Первый прогон переводов (на случай, если DOM уже отрисован без них)
+  applyTranslations(document);
 
   setInterval(async () => {
     try {
@@ -289,4 +463,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 5000);
 });
-
