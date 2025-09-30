@@ -337,35 +337,55 @@ function stopPolling() {
 
 
 async function checkAndStartGame() {
-  // ⛔ До регистрации ничего не пулим
   if (!appState.userId) return;
-
-  // Если уже ждём результаты или завершили — не трогаем
   if (appState.currentState === 'waiting-results' || appState.currentState === 'finished') return;
 
   try {
     const event_id = await getActiveEventId(telegramId);
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
-    const quizzes = await ApiClient.listQuizzes(event_id);
-    const activeQuiz = quizzes.find(q => q.is_active);
 
-    if (eventStatus.game_status === "started" && activeQuiz) {
+    // нормализуем статус
+    const status = String(eventStatus?.game_status || '').trim().toLowerCase();
+
+    const quizzes = await ApiClient.listQuizzes(event_id);
+    // ищем активный квиз по нескольким признакам
+    const activeQuiz = quizzes.find(q =>
+      q?.is_active === true ||
+      String(q?.is_active).trim() === '1' ||
+      String(q?.status || '').trim().toLowerCase() === 'active' ||
+      String(q?.state  || '').trim().toLowerCase() === 'active'
+    );
+
+    console.log('status=', status, 'activeQuiz=', activeQuiz);
+
+    if (status === "started" && activeQuiz) {
       if (appState.currentState !== 'game' && appState.currentState !== 'game-open') {
-        console.log("🎯 Активный квиз:", activeQuiz);
         currentLang = appState.lang;
 
         const rawQuestions = await ApiClient.listQuestions(activeQuiz.id, currentLang, true, telegramId);
-        const preparedQuestions = rawQuestions.map(q => ({ ...q, quiz_id: activeQuiz.id }));
+        // удаляем дубли по id
+        const seen = new Set();
+        const unique = [];
+        for (const q of rawQuestions || []) {
+          if (q && !seen.has(q.id)) { seen.add(q.id); unique.push(q); }
+        }
+        const preparedQuestions = unique.map(q => ({ ...q, quiz_id: activeQuiz.id }));
 
         questions = shuffle(preparedQuestions).slice(0, 10);
         questionIndex = 0;
+        askedQuestionIds.clear();
+
+        if (!questions.length) {
+          console.warn('Нет вопросов для активного квиза');
+          showState('waiting'); // или оставить текущий экран
+          return;
+        }
 
         const firstType = questions[0]?.type;
         showState(firstType === "open" ? "game-open" : "game");
         nextQuestion();
       }
     } else {
-      // ⚠️ НЕ перекидываем с registration на waiting
       if (appState.currentState !== 'waiting' && appState.currentState !== 'registration') {
         showState("waiting");
       }
@@ -376,6 +396,7 @@ async function checkAndStartGame() {
     if (adminEl) adminEl.textContent = "Ошибка: " + e.message;
   }
 }
+
 
 
 // ==== Получение текста/опций вопроса с учетом локали ====
@@ -410,7 +431,7 @@ async function getActiveEventId(telegramId) {
     const events = await ApiClient.listEvents(telegramId);
     if (!events || !events.length) throw new Error("Нет доступных событий");
 
-    const active = events.find(e => e.game_status === "started");
+    const active = events.find(e => String(e?.game_status || '').trim().toLowerCase() === "started");
     if (active) return active.id;
 
     const latest = events.reduce((max, e) => e.id > max.id ? e : max, events[0]);
@@ -420,6 +441,7 @@ async function getActiveEventId(telegramId) {
     return 1; // fallback
   }
 }
+
 
 async function handleOptionClick(index) {
   const q = questions[questionIndex];
@@ -456,6 +478,10 @@ function qs(id) {
 function qsa(sel) {
   return document.querySelectorAll(`#state-${appState.currentState} ${sel}`);
 }
+
+// какие вопросы уже показывали (для защиты от повторов)
+const askedQuestionIds = new Set();
+
 
 // ==== Переход к следующему вопросу ====
 function nextQuestion() {
