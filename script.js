@@ -35,7 +35,7 @@ const I18N = {
       text: "Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа!"
     },
     common: {
-      logout: "Выйти и сменить никнейм"
+      logout: "Выйти и сменить"
     },
     game: {
       question_label: "Вопрос",
@@ -82,7 +82,7 @@ const I18N = {
       text: "When the game ends, we'll count the points and announce the stage results!"
     },
     common: {
-      logout: "Log out & change nickname"
+      logout: "Log out"
     },
     game: {
       question_label: "Question",
@@ -134,13 +134,13 @@ function applyTranslations(root = document) {
     if (val) el.setAttribute('placeholder', val);
   });
 
-  // Заголовок страницы
-  const titleEl = document.querySelector('head title[data-i18n="app.title"]');
-  if (titleEl) titleEl.textContent = t('app.title', lang);
+  // Заголовок страницы — всегда просто выставляем
+  document.title = t('app.title', lang);
 
   // Строка "Вопрос X/Y" — строим заново на текущем экране
   updateQuestionProgressLabel();
 }
+
 
 // Отрисовка "Вопрос/Question X/Y"
 function updateQuestionProgressLabel() {
@@ -186,6 +186,37 @@ document.addEventListener('change', (e) => {
   }
 });
 
+// registrationForm.addEventListener("submit", async (e) => {
+//   e.preventDefault();
+//   const nickname = nicknameInput.value.trim();
+//   const lang = (new FormData(registrationForm).get('lang') || appState.lang || 'ru').toLowerCase();
+//   if (!nickname) return;
+
+//   try {
+//     registrationError.classList.add("hidden");
+//     console.log("🚀 Начало процесса регистрации/авторизации...");
+
+//     const userData = await ApiClient.registerOrGetUser(telegramId, nickname);
+
+//     appState.userId = userData.userId;
+//     appState.userNickname = userData.nickname;
+//     appState.points = userData.points;
+//     appState.lang = lang;
+//     localStorage.setItem('lang', appState.lang);
+//     syncHtmlLang();
+//     applyTranslations(document);
+
+//     console.log("✅ Пользователь вошёл:", appState);
+//     showState('waiting');
+//   } catch (err) {
+//     console.error("❌ Ошибка входа:", err);
+//     registrationError.textContent = err.message;
+//     registrationError.classList.remove("hidden");
+//   }
+// });
+
+// ==== Навигация по экранам ====
+
 registrationForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const nickname = nicknameInput.value.trim();
@@ -202,12 +233,15 @@ registrationForm.addEventListener("submit", async (e) => {
     appState.userNickname = userData.nickname;
     appState.points = userData.points;
     appState.lang = lang;
+
     localStorage.setItem('lang', appState.lang);
     syncHtmlLang();
     applyTranslations(document);
 
     console.log("✅ Пользователь вошёл:", appState);
-    showState('waiting');
+
+    showState('waiting');   // показываем ожидание только после успешной регистрации
+    startPolling();         // запускаем авто-проверку статуса только для зарегистрированного
   } catch (err) {
     console.error("❌ Ошибка входа:", err);
     registrationError.textContent = err.message;
@@ -215,23 +249,44 @@ registrationForm.addEventListener("submit", async (e) => {
   }
 });
 
-// ==== Навигация по экранам ====
+// function showState(state) {
+//   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
+
+//   const el = document.getElementById(`state-${state}`);
+//   if (el) el.classList.remove("hidden");
+
+//   const nicknameElements = el?.querySelectorAll("[id$='nickname']") || [];
+//   nicknameElements.forEach(elm => { elm.textContent = appState.userNickname; });
+
+//   appState.currentState = state;
+
+//   // Применяем перевод к новому экрану
+//   applyTranslations(el);
+// }
+
+// ==== Вспомогательные ====
+
 function showState(state) {
+  // Скрываем все экраны
   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
 
+  // Показываем нужный экран
   const el = document.getElementById(`state-${state}`);
   if (el) el.classList.remove("hidden");
 
+  // Аккуратно подставляем ник (без "null"/"undefined")
   const nicknameElements = el?.querySelectorAll("[id$='nickname']") || [];
-  nicknameElements.forEach(elm => { elm.textContent = appState.userNickname; });
+  nicknameElements.forEach(elm => {
+    elm.textContent = appState.userNickname || '';
+  });
 
+  // Фиксируем текущее состояние
   appState.currentState = state;
 
-  // Применяем перевод к новому экрану
+  // Применяем переводы к новому экрану
   applyTranslations(el);
 }
 
-// ==== Вспомогательные ====
 function shuffle(input) {
   const a = Array.isArray(input) ? input.slice() : [input];
   for (let i = a.length - 1; i > 0; i--) {
@@ -266,9 +321,26 @@ let questions = [];
 let intervalId = null;
 let gameTimer = null;
 let currentLang = appState.lang;
+// === Пуллинг статуса игры (старт/стоп по факту регистрации) ===
+let pollId = null;
 
-// ==== Автостарт игры ====
+function startPolling() {
+  if (pollId) return;
+  pollId = setInterval(() => {
+    checkAndStartGame().catch(e => console.error("Ошибка проверки статуса игры:", e));
+  }, 5000);
+}
+
+function stopPolling() {
+  if (pollId) { clearInterval(pollId); pollId = null; }
+}
+
+
 async function checkAndStartGame() {
+  // ⛔ До регистрации ничего не пулим
+  if (!appState.userId) return;
+
+  // Если уже ждём результаты или завершили — не трогаем
   if (appState.currentState === 'waiting-results' || appState.currentState === 'finished') return;
 
   try {
@@ -293,7 +365,10 @@ async function checkAndStartGame() {
         nextQuestion();
       }
     } else {
-      if (appState.currentState !== 'waiting') showState("waiting");
+      // ⚠️ НЕ перекидываем с registration на waiting
+      if (appState.currentState !== 'waiting' && appState.currentState !== 'registration') {
+        showState("waiting");
+      }
     }
   } catch (e) {
     console.error("Ошибка при запуске игры:", e);
@@ -301,6 +376,7 @@ async function checkAndStartGame() {
     if (adminEl) adminEl.textContent = "Ошибка: " + e.message;
   }
 }
+
 
 // ==== Получение текста/опций вопроса с учетом локали ====
 function qText(q) {
@@ -438,11 +514,13 @@ function nextQuestion() {
 
 // ==== Выход ====
 function logout() {
+  stopPolling();                 // останавливаем авто-пуллинг
   appState.userId = null;
   appState.userNickname = '';
   nicknameInput.value = '';
-  showState('registration');
+  showState('registration');     // возвращаем на регистрацию
 }
+
 
 // ==== Инициализация ====
 document.addEventListener("DOMContentLoaded", () => {
@@ -452,14 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
     (appState.lang === 'ru' ? ru : en).checked = true;
   }
 
-  // Первый прогон переводов (на случай, если DOM уже отрисован без них)
+  // Первый прогон переводов
   applyTranslations(document);
 
-  setInterval(async () => {
-    try {
-      checkAndStartGame();
-    } catch (e) {
-      console.error("Ошибка проверки статуса игры:", e);
-    }
-  }, 5000);
 });
