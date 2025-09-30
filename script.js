@@ -459,6 +459,11 @@ function qsa(sel) {
 
 // ==== Переход к следующему вопросу ====
 function nextQuestion() {
+  // пропускаем уже показанные вопросы (на всякий случай)
+  while (questionIndex < questions.length && askedQuestionIds.has(questions[questionIndex]?.id)) {
+    questionIndex++;
+  }
+
   if (questionIndex >= questions.length) {
     if (gameTimer) clearTimeout(gameTimer);
     if (intervalId) clearInterval(intervalId);
@@ -467,6 +472,8 @@ function nextQuestion() {
   }
 
   const q = questions[questionIndex];
+  // помечаем текущий вопрос как показанный
+  if (q?.id != null) askedQuestionIds.add(q.id);
 
   const qTextEl = qs("question-text");
   const curEl   = qs("current-q");
@@ -481,8 +488,8 @@ function nextQuestion() {
 
   qTextEl.textContent = qText(q, currentLang);
 
-  // let timer = Number(q.duration_seconds) > 0 ? Number(q.duration_seconds) : 15;
-  let timer = 25;
+  // 25 секунд на вопрос
+  let timer = Number(q?.duration_seconds) > 0 ? Number(q.duration_seconds) : 25;
   const fmt = s => `00:${s < 10 ? '0' + s : s}`;
   timerEl.textContent = fmt(timer);
 
@@ -490,7 +497,11 @@ function nextQuestion() {
   intervalId = setInterval(() => {
     timer--;
     timerEl.textContent = fmt(timer);
-    if (timer <= 0) { clearInterval(intervalId); questionIndex++; nextQuestion(); }
+    if (timer <= 0) {
+      clearInterval(intervalId);
+      questionIndex++;
+      nextQuestion();
+    }
   }, 1000);
 
   if (q.type === "single") {
@@ -499,7 +510,6 @@ function nextQuestion() {
     const textarea = qs("answer-textarea");
     const submitBtn = qs("submit-answer-btn");
     if (textarea && submitBtn) {
-      // Обновим плейсхолдер и подпись кнопки под язык
       textarea.setAttribute('placeholder', t('game.answer_ph'));
       submitBtn.textContent = t('game.submit');
 
@@ -512,6 +522,7 @@ function nextQuestion() {
     }
   }
 }
+
 
 // ==== Выход ====
 function logout() {
