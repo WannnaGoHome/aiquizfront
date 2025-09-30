@@ -481,7 +481,8 @@ function nextQuestion() {
 
   qTextEl.textContent = qText(q, currentLang);
 
-  let timer = Number(q.duration_seconds) > 0 ? Number(q.duration_seconds) : 15;
+  // let timer = Number(q.duration_seconds) > 0 ? Number(q.duration_seconds) : 15;
+  let timer = 25;
   const fmt = s => `00:${s < 10 ? '0' + s : s}`;
   timerEl.textContent = fmt(timer);
 
