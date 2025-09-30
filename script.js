@@ -1,4 +1,4 @@
-// ==== Telegram WebApp и тема ====
+
 const tg = window.Telegram?.WebApp;
 tg?.expand();
 
@@ -8,11 +8,9 @@ function applyTheme() {
 applyTheme();
 tg?.onEvent('themeChanged', applyTheme);
 
-// ==== Пользователь Telegram ====
 const telegramUser = tg?.initDataUnsafe?.user;
 const telegramId = telegramUser?.id;
 
-// ==== I18N словарь ====
 const I18N = {
   ru: {
     app: { title: "🎯 Квиз-игра" },
@@ -35,7 +33,7 @@ const I18N = {
       text: "Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа!"
     },
     common: {
-      logout: "Выйти и сменить"
+      logout: "Выйти"
     },
     game: {
       question_label: "Вопрос",
@@ -110,13 +108,11 @@ const I18N = {
   }
 };
 
-// Утилиты i18n
 const t = (keyPath, lang) => {
   const l = lang || (window.appState?.lang) || 'ru';
   return keyPath.split('.').reduce((acc, k) => acc?.[k], I18N[l]) ?? '';
 };
 
-// Применение переводов к DOM
 function applyTranslations(root = document) {
   const lang = appState.lang || 'ru';
 
@@ -141,8 +137,6 @@ function applyTranslations(root = document) {
   updateQuestionProgressLabel();
 }
 
-
-// Отрисовка "Вопрос/Question X/Y"
 function updateQuestionProgressLabel() {
   const container = document.querySelector(`#state-${appState.currentState} #question-progress`);
   const curEl = document.querySelector(`#state-${appState.currentState} #current-q`);
@@ -154,7 +148,6 @@ function updateQuestionProgressLabel() {
   container.innerHTML = `${t('game.question_label')} <span id="current-q">${current}</span>/<span id="total-qs">${total}</span>`;
 }
 
-// ==== Состояние приложения ====
 let appState = {
   currentState: 'registration',
   userId: null,
@@ -169,14 +162,12 @@ function syncHtmlLang() {
   document.documentElement.dir = ['ar','he','fa','ur'].includes(lang) ? 'rtl' : 'ltr';
 }
 syncHtmlLang();
-applyTranslations(document); // первичное применение переводов
+applyTranslations(document);
 
-// ==== Элементы регистрации ====
 const registrationForm = document.getElementById("registration-form");
 const nicknameInput = document.getElementById("nickname-input");
 const registrationError = document.getElementById("registration-error");
 
-// Живое переключение языка до регистрации
 document.addEventListener('change', (e) => {
   if (e.target && e.target.name === 'lang') {
     appState.lang = e.target.value.toLowerCase();
@@ -185,37 +176,6 @@ document.addEventListener('change', (e) => {
     applyTranslations(document);
   }
 });
-
-// registrationForm.addEventListener("submit", async (e) => {
-//   e.preventDefault();
-//   const nickname = nicknameInput.value.trim();
-//   const lang = (new FormData(registrationForm).get('lang') || appState.lang || 'ru').toLowerCase();
-//   if (!nickname) return;
-
-//   try {
-//     registrationError.classList.add("hidden");
-//     console.log("🚀 Начало процесса регистрации/авторизации...");
-
-//     const userData = await ApiClient.registerOrGetUser(telegramId, nickname);
-
-//     appState.userId = userData.userId;
-//     appState.userNickname = userData.nickname;
-//     appState.points = userData.points;
-//     appState.lang = lang;
-//     localStorage.setItem('lang', appState.lang);
-//     syncHtmlLang();
-//     applyTranslations(document);
-
-//     console.log("✅ Пользователь вошёл:", appState);
-//     showState('waiting');
-//   } catch (err) {
-//     console.error("❌ Ошибка входа:", err);
-//     registrationError.textContent = err.message;
-//     registrationError.classList.remove("hidden");
-//   }
-// });
-
-// ==== Навигация по экранам ====
 
 registrationForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -240,16 +200,14 @@ registrationForm.addEventListener("submit", async (e) => {
 
     console.log("✅ Пользователь вошёл:", appState);
 
-    showState('waiting');   // показываем ожидание только после успешной регистрации
-    startPolling();         // запускаем авто-проверку статуса только для зарегистрированного
+    showState('waiting');  
+    startPolling();       
   } catch (err) {
     console.error("❌ Ошибка входа:", err);
     registrationError.textContent = err.message;
     registrationError.classList.remove("hidden");
   }
 });
-
-// function showState(state) {
 //   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
 
 //   const el = document.getElementById(`state-${state}`);
@@ -267,23 +225,14 @@ registrationForm.addEventListener("submit", async (e) => {
 // ==== Вспомогательные ====
 
 function showState(state) {
-  // Скрываем все экраны
   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
-
-  // Показываем нужный экран
   const el = document.getElementById(`state-${state}`);
   if (el) el.classList.remove("hidden");
-
-  // Аккуратно подставляем ник (без "null"/"undefined")
   const nicknameElements = el?.querySelectorAll("[id$='nickname']") || [];
   nicknameElements.forEach(elm => {
     elm.textContent = appState.userNickname || '';
   });
-
-  // Фиксируем текущее состояние
   appState.currentState = state;
-
-  // Применяем переводы к новому экрану
   applyTranslations(el);
 }
 
@@ -296,7 +245,6 @@ function shuffle(input) {
   return a;
 }
 
-// ==== Завершение фазы ====
 async function finishGamePhase() {
   try {
     const event_id = await getActiveEventId(telegramId);
@@ -321,7 +269,6 @@ let questions = [];
 let intervalId = null;
 let gameTimer = null;
 let currentLang = appState.lang;
-// === Пуллинг статуса игры (старт/стоп по факту регистрации) ===
 let pollId = null;
 
 function startPolling() {
@@ -344,17 +291,10 @@ async function checkAndStartGame() {
     const event_id = await getActiveEventId(telegramId);
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
 
-    // нормализуем статус
     const status = String(eventStatus?.game_status || '').trim().toLowerCase();
 
     const quizzes = await ApiClient.listQuizzes(event_id);
-    // ищем активный квиз по нескольким признакам
-    const activeQuiz = quizzes.find(q =>
-      q?.is_active === true ||
-      String(q?.is_active).trim() === '1' ||
-      String(q?.status || '').trim().toLowerCase() === 'active' ||
-      String(q?.state  || '').trim().toLowerCase() === 'active'
-    );
+    const activeQuiz = quizzes.find(q => q?.is_active === true);
 
     console.log('status=', status, 'activeQuiz=', activeQuiz);
 
@@ -363,7 +303,6 @@ async function checkAndStartGame() {
         currentLang = appState.lang;
 
         const rawQuestions = await ApiClient.listQuestions(activeQuiz.id, currentLang, true, telegramId);
-        // удаляем дубли по id
         const seen = new Set();
         const unique = [];
         for (const q of rawQuestions || []) {
@@ -371,13 +310,13 @@ async function checkAndStartGame() {
         }
         const preparedQuestions = unique.map(q => ({ ...q, quiz_id: activeQuiz.id }));
 
-        questions = shuffle(preparedQuestions).slice(0, 10);
+        questions = shuffle(preparedQuestions).slice(0, 15);
         questionIndex = 0;
         askedQuestionIds.clear();
 
         if (!questions.length) {
           console.warn('Нет вопросов для активного квиза');
-          showState('waiting'); // или оставить текущий экран
+          showState('waiting');
           return;
         }
 
@@ -397,9 +336,6 @@ async function checkAndStartGame() {
   }
 }
 
-
-
-// ==== Получение текста/опций вопроса с учетом локали ====
 function qText(q) {
   const lang = appState.lang || 'ru';
   return q?.text_i18n?.[lang] ?? q?.text ?? "";
@@ -410,7 +346,7 @@ function qOptions(q) {
     ? q.options_i18n[lang]
     : Array.isArray(q?.options) ? q.options : [];
 }
-function qCorrect(q) { return []; } // заглушка
+function qCorrect(q) { return []; }
 
 function renderOptions(options) {
   const container = qs("options");
@@ -438,7 +374,7 @@ async function getActiveEventId(telegramId) {
     return latest.id;
   } catch (err) {
     console.error("❌ Ошибка при получении event_id:", err);
-    return 1; // fallback
+    return 1;
   }
 }
 
@@ -449,7 +385,11 @@ async function handleOptionClick(index) {
   const chosen = options[index];
   const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
 
-  document.querySelectorAll(".answer-option").forEach(btn => btn.classList.add("disabled"));
+  document.querySelectorAll(".answer-option").forEach(btn => {
+    btn.classList.add("disabled");
+    btn.style.pointerEvents = "none";
+  });
+  selectedBtn.classList.add("selected");
 
   try {
     const res = await ApiClient.sendAnswer(
@@ -460,10 +400,14 @@ async function handleOptionClick(index) {
       currentLang
     );
     console.log("✅ Ответ отправлен:", res);
-    selectedBtn.classList.add("correct");
+    const isCorrect = !!(res?.awarded_points!=0)
+
+    selectedBtn.classList.remove("selected");
+    selectedBtn.classList.add(isCorrect? "correct" : "incorrect");
   } catch (err) {
     console.error("Ошибка при отправке:", err);
-    selectedBtn.classList.add("correct");
+    selectedBtn.classList.remove("selected");
+    selectedBtn.classList.add("incorrect");
   }
 
   setTimeout(() => {
@@ -479,13 +423,9 @@ function qsa(sel) {
   return document.querySelectorAll(`#state-${appState.currentState} ${sel}`);
 }
 
-// какие вопросы уже показывали (для защиты от повторов)
 const askedQuestionIds = new Set();
 
-
-// ==== Переход к следующему вопросу ====
 function nextQuestion() {
-  // пропускаем уже показанные вопросы (на всякий случай)
   while (questionIndex < questions.length && askedQuestionIds.has(questions[questionIndex]?.id)) {
     questionIndex++;
   }
@@ -498,7 +438,6 @@ function nextQuestion() {
   }
 
   const q = questions[questionIndex];
-  // помечаем текущий вопрос как показанный
   if (q?.id != null) askedQuestionIds.add(q.id);
 
   const qTextEl = qs("question-text");
@@ -507,14 +446,12 @@ function nextQuestion() {
   const timerEl = qs("question-timer");
   if (!qTextEl || !curEl || !totEl || !timerEl) return;
 
-  // Заголовок/строка «Вопрос X/Y» на текущем языке
   curEl.textContent = String(questionIndex + 1);
   totEl.textContent = String(questions.length);
   updateQuestionProgressLabel();
 
   qTextEl.textContent = qText(q, currentLang);
 
-  // 25 секунд на вопрос
   let timer = 25;
   const fmt = s => `00:${s < 10 ? '0' + s : s}`;
   timerEl.textContent = fmt(timer);
@@ -532,7 +469,7 @@ function nextQuestion() {
 
   if (q.type === "single") {
     renderOptions(qOptions(q, currentLang));
-  } else { // open
+  } else { 
     const textarea = qs("answer-textarea");
     const submitBtn = qs("submit-answer-btn");
     if (textarea && submitBtn) {
@@ -549,16 +486,13 @@ function nextQuestion() {
   }
 }
 
-
-// ==== Выход ====
 function logout() {
-  stopPolling();                 // останавливаем авто-пуллинг
+  stopPolling();   
   appState.userId = null;
   appState.userNickname = '';
   nicknameInput.value = '';
-  showState('registration');     // возвращаем на регистрацию
+  showState('registration');
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   const ru = document.getElementById('lang-ru');
@@ -567,13 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
     (appState.lang === 'ru' ? ru : en).checked = true;
   }
 
-  // Применяем переводы
   applyTranslations(document);
-
-  // ✅ Всегда запускаем пуллинг при старте приложения.
-  // Для незарегистрированных он безопасно ничего не делает (см. guard в checkAndStartGame).
   startPolling();
-
-  // ✅ И сразу делаем моментальную проверку без ожидания 5 сек.
   checkAndStartGame().catch(e => console.error("Стартовая проверка игры:", e));
 });
