@@ -523,7 +523,6 @@ function logout() {
 }
 
 
-// ==== Инициализация ====
 document.addEventListener("DOMContentLoaded", () => {
   const ru = document.getElementById('lang-ru');
   const en = document.getElementById('lang-en');
@@ -531,7 +530,13 @@ document.addEventListener("DOMContentLoaded", () => {
     (appState.lang === 'ru' ? ru : en).checked = true;
   }
 
-  // Первый прогон переводов
+  // Применяем переводы
   applyTranslations(document);
 
+  // ✅ Всегда запускаем пуллинг при старте приложения.
+  // Для незарегистрированных он безопасно ничего не делает (см. guard в checkAndStartGame).
+  startPolling();
+
+  // ✅ И сразу делаем моментальную проверку без ожидания 5 сек.
+  checkAndStartGame().catch(e => console.error("Стартовая проверка игры:", e));
 });
