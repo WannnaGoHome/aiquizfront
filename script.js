@@ -229,7 +229,7 @@ registrationForm.addEventListener("submit", async (e) => {
 
     const userData = await ApiClient.registerOrGetUser(telegramId, nickname);
 
-    appState.userId = userData.userId;
+    appState.userId = userData.id;
     appState.userNickname = userData.nickname;
     appState.points = userData.points;
     appState.lang = lang;
@@ -301,9 +301,9 @@ async function finishGamePhase() {
   try {
     const event_id = await getActiveEventId(telegramId);
     let phase = await ApiClient.getEventStatus(event_id, telegramId);
-    if (phase.game_status === "finished") {
+    if (phase.status === "finished") {
       showState("finished");
-    } else if (phase.game_status === "registration") {
+    } else if (phase.status === "registration") {
       showState("registration");
     } else {
       showState("waiting-results");
@@ -345,7 +345,7 @@ async function checkAndStartGame() {
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
 
     // нормализуем статус
-    const status = String(eventStatus?.game_status || '').trim().toLowerCase();
+    const status = String(eventStatus?.status || '').trim().toLowerCase();
 
     const quizzes = await ApiClient.listQuizzes(event_id);
     // ищем активный квиз по нескольким признакам
@@ -431,7 +431,7 @@ async function getActiveEventId(telegramId) {
     const events = await ApiClient.listEvents(telegramId);
     if (!events || !events.length) throw new Error("Нет доступных событий");
 
-    const active = events.find(e => String(e?.game_status || '').trim().toLowerCase() === "started");
+    const active = events.find(e => String(e?.status || '').trim().toLowerCase() === "started");
     if (active) return active.id;
 
     const latest = events.reduce((max, e) => e.id > max.id ? e : max, events[0]);
