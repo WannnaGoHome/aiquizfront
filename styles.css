@@ -388,7 +388,18 @@ form button { margin-top: 1.5rem; }
   transition: all 0.3s ease; backdrop-filter: blur(8px); box-shadow: var(--shadow-sm);
 }
 .lang-option:hover { border-color: var(--tg-button-color); transform: translateY(-2px); }
-.lang-option input { accent-color: var(--tg-button-color); transform: scale(1.2); }
+.lang-option input {
+  accent-color: var(--tg-button-color);
+  transform: none;        /* 🔧 снять масштаб */
+  width: 20px;            /* задать фактический бокс */
+  height: 20px;
+  margin: 0;              /* убрать дефолтные iOS-отступы */
+  flex: 0 0 20px;         /* не схлопывать */
+  vertical-align: middle; /* подравнять по базовой линии */
+}
+.lang-option span {
+  line-height: 20px;      /* чтобы текст ровнялся с кружком */
+}
 html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.15); }
 .lang-option span { color: var(--tg-text-color); font-weight: 500; user-select: none; }
 
