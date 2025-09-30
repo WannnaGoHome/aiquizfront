@@ -137,6 +137,21 @@ function applyTranslations(root = document) {
   updateQuestionProgressLabel();
 }
 
+function quizKey(eventId, quizId) {
+  return `quiz:${eventId}:${quizId}:${telegramId}`;
+}
+
+function readQuizMark(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : {};
+  } catch (_) {
+    // если вдруг был битый JSON — зачистим и вернём пусто
+    localStorage.removeItem(key);
+    return {};
+  }
+}
+
 function updateQuestionProgressLabel() {
   const container = document.querySelector(`#state-${appState.currentState} #question-progress`);
   const curEl = document.querySelector(`#state-${appState.currentState} #current-q`);
@@ -249,6 +264,15 @@ async function finishGamePhase() {
   try {
     const event_id = await getActiveEventId(telegramId);
     let phase = await ApiClient.getEventStatus(event_id, telegramId);
+
+    if (questions.length > 0) {
+      const quizId = questions[0]?.quiz_id;
+      if (quizId) {
+        const key = quizKey(event_id, quizId); // 👈 event_id
+        localStorage.setItem(key, JSON.stringify({ completed: true }));
+      }
+    }
+
     if (phase.game_status === "finished") {
       showState("finished");
     } else if (phase.game_status === "registration") {
@@ -282,7 +306,6 @@ function stopPolling() {
   if (pollId) { clearInterval(pollId); pollId = null; }
 }
 
-
 async function checkAndStartGame() {
   if (!appState.userId) return;
   if (appState.currentState === 'waiting-results' || appState.currentState === 'finished') return;
@@ -290,7 +313,6 @@ async function checkAndStartGame() {
   try {
     const event_id = await getActiveEventId(telegramId);
     const eventStatus = await ApiClient.getEventStatus(event_id, telegramId);
-
     const status = String(eventStatus?.game_status || '').trim().toLowerCase();
 
     const quizzes = await ApiClient.listQuizzes(event_id);
@@ -299,6 +321,15 @@ async function checkAndStartGame() {
     console.log('status=', status, 'activeQuiz=', activeQuiz);
 
     if (status === "started" && activeQuiz) {
+      const key = quizKey(event_id, activeQuiz.id);
+      const mark = readQuizMark(key);
+
+      if (mark?.completed) {
+        console.log("⛔ Уже проходил этот квиз — показываем ожидание результатов");
+        showState("waiting-results");
+        return;
+      }
+
       if (appState.currentState !== 'game' && appState.currentState !== 'game-open') {
         currentLang = appState.lang;
 
@@ -323,6 +354,8 @@ async function checkAndStartGame() {
         const firstType = questions[0]?.type;
         showState(firstType === "open" ? "game-open" : "game");
         nextQuestion();
+
+        localStorage.setItem(key, JSON.stringify({ inProgress: true }));
       }
     } else {
       if (appState.currentState !== 'waiting' && appState.currentState !== 'registration') {
@@ -340,12 +373,14 @@ function qText(q) {
   const lang = appState.lang || 'ru';
   return q?.text_i18n?.[lang] ?? q?.text ?? "";
 }
+
 function qOptions(q) {
   const lang = appState.lang || 'ru';
   return Array.isArray(q?.options_i18n?.[lang])
     ? q.options_i18n[lang]
     : Array.isArray(q?.options) ? q.options : [];
 }
+
 function qCorrect(q) { return []; }
 
 function renderOptions(options) {
@@ -377,7 +412,6 @@ async function getActiveEventId(telegramId) {
     return 1;
   }
 }
-
 
 async function handleOptionClick(index) {
   const q = questions[questionIndex];
@@ -419,6 +453,7 @@ async function handleOptionClick(index) {
 function qs(id) {
   return document.querySelector(`#state-${appState.currentState} #${id}`);
 }
+
 function qsa(sel) {
   return document.querySelectorAll(`#state-${appState.currentState} ${sel}`);
 }
