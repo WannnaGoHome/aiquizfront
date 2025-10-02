@@ -105,7 +105,54 @@ const I18N = {
       prize_text: "Please come to the organizers' desk on the first floor and say your nickname <strong id=\"winner-nickname\"></strong> to receive the prize.",
       thanks_again: "Thanks again for participating!"
     }
-  }
+  },
+  kk: {
+    app: { title: "🎯 Квиз ойыны" },
+    registration: {
+      subtitle: "Қатысу үшін тіркеліңіз. Атыңыз бен тегіңізді енгізіңіз:",
+      nickname_ph: "Лақап атыңызды енгізіңіз",
+      choose_lang: "Тілді таңдаңыз / Select language",
+      lang_ru: "Орыс тілі",
+      lang_en: "English",
+      join_btn: "Қатысу!"
+    },
+    waiting: {
+      title: "Ойынның басталуын күтіңіз",
+      nickname_label: "Сіздің лақап атыңыз:",
+      wait_text: "Админ ойынды іске қосқан сәтте, мұнда бірінші сұрақ шығады. Байланыста болыңыз!"
+    },
+    waiting_results: {
+      title: "Күтеміз…",
+      nickname_label: "Сіздің лақап атыңыз:",
+      text: "Ойын аяқталған бойда ұпайлар есептеліп, осы кезеңнің нәтижелері жарияланады!"
+    },
+    common: {
+      logout: "Шығу және ауыстыру"
+    },
+    game: {
+      question_label: "Сұрақ",
+      loading_question: "Сұрақтың мәтіні жүктелуде...",
+      answer_ph: "Толық жауабыңызды осында енгізіңіз...",
+      submit: "Жауапты жіберу"
+    },
+    between: {
+      title: "Жауап қабылданды!",
+      next_in: "Келесі сұрақтың пайда болуына <span id=\"between-timer\">5</span> секунд...",
+      stay_tuned: "Бізбен бірге болыңыздар! Сіз жеңіске бір қадам жақындадыңыз..."
+    },
+    finished: {
+      title: "Ойын аяқталды!",
+      thanks: "Жауаптарыңыз бен қатысқаныңыз үшін рақмет!",
+      processing: "Қазір  біздің ЖИ-ассистент нәтижелерді талдап жатыр. Қорытынды мен жеңімпаздар тізімі кейінірек осында жарияланады."
+    },
+    winner: {
+      title: "Құттықтаймыз!",
+      text: "Сіздің жауаптарыңыз ең үздіктердің қатарында болды! Сіз жеңімпаздар қатарына кірдіңіз!",
+      prize_title: "Сіздің жүлдеңіз:",
+      prize_text: "Өзіңізге лайық жүлдені алу үшін <strong id=\"winner-nickname\"></strong> бірінші қабаттағы ұйымдастырушылардың тіркеу үстеліне барып, лақап атыңызды айтыңыз.",
+      thanks_again: "Қатысқаныңыз үшін тағы да рақмет!"
+    }
+  },
 };
 
 const t = (keyPath, lang) => {
@@ -163,12 +210,22 @@ function updateQuestionProgressLabel() {
   container.innerHTML = `${t('game.question_label')} <span id="current-q">${current}</span>/<span id="total-qs">${total}</span>`;
 }
 
+function detectDefaultLang() {
+  const saved = localStorage.getItem('lang');
+  if (saved) return saved;
+
+  const code = tg?.initDataUnsafe?.user?.language_code || '';
+  if (code.startsWith('kk')) return 'kk';
+  if (code.startsWith('ru')) return 'ru';
+  return 'en';
+}
+
 let appState = {
   currentState: 'registration',
   userId: null,
   userNickname: '',
   points: null,
-  lang: localStorage.getItem('lang') || (tg?.initDataUnsafe?.user?.language_code?.startsWith('ru') ? 'ru' : 'en'),
+  lang: detectDefaultLang(),
 };
 
 function syncHtmlLang() {
@@ -370,15 +427,18 @@ async function checkAndStartGame() {
 }
 
 function qText(q) {
-  const lang = appState.lang || 'ru';
-  return q?.text_i18n?.[lang] ?? q?.text ?? "";
+  const pref = appState.lang || 'ru';
+  const i18n = q?.text_i18n || {};
+  return i18n[pref] ?? i18n.ru ?? i18n.en ?? q?.text ?? "";
 }
 
 function qOptions(q) {
-  const lang = appState.lang || 'ru';
-  return Array.isArray(q?.options_i18n?.[lang])
-    ? q.options_i18n[lang]
-    : Array.isArray(q?.options) ? q.options : [];
+  const pref = appState.lang || 'ru';
+  const i18n = q?.options_i18n || {};
+  if (Array.isArray(i18n[pref])) return i18n[pref];
+  if (Array.isArray(i18n.ru))   return i18n.ru;
+  if (Array.isArray(i18n.en))   return i18n.en;
+  return Array.isArray(q?.options) ? q.options : [];
 }
 
 function qCorrect(q) { return []; }
@@ -532,8 +592,9 @@ function logout() {
 document.addEventListener("DOMContentLoaded", () => {
   const ru = document.getElementById('lang-ru');
   const en = document.getElementById('lang-en');
-  if (ru && en) {
-    (appState.lang === 'ru' ? ru : en).checked = true;
+  const kk = document.getElementById('lang-kk');  
+  if (ru && en && kk) {
+    (appState.lang === 'ru' ? ru : appState.lang === 'en' ? en : kk).checked = true;
   }
 
   applyTranslations(document);
