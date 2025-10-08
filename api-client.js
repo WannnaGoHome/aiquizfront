@@ -4,7 +4,7 @@ const ApiClient = {
 
   getUser: async (telegram_id) => {
     try {
-      const res = await fetch(`${API_BASE}/users/${telegram_id}`, {
+      const res = await fetch(`${API_BASE}/users/${telegram_id}?current_user_telegram_id=1234`, {
         method: "GET",
         headers: { "Accept": "application/json",
         "ngrok-skip-browser-warning": "1"
@@ -47,7 +47,7 @@ const ApiClient = {
         },
         body: JSON.stringify({ 
           telegram_id: telegramId, 
-          nickname: nickname,
+          nickname,
           first_name: firstName,
           last_name: lastName,
          })
@@ -121,7 +121,7 @@ const ApiClient = {
 
   getEventStatus: async (eventId, telegram_id) => {
       try {
-          const res = await fetch(`${API_BASE}/events/${eventId}?telegram_id=${telegram_id}`, { 
+          const res = await fetch(`${API_BASE}/events/${eventId}?current_user_telegram_id=${telegram_id}`, { 
             method: "GET",
             headers: { "Accept": "application/json",
             "ngrok-skip-browser-warning": "1"
@@ -159,7 +159,7 @@ const ApiClient = {
 
   listQuestions: async (quizId, locale, include_correct, telegram_id) => {
   try {
-    const res = await fetch(`${API_BASE}/quizes/${quizId}/questions?locale=${locale}&include_correct=${include_correct}&telegram_id=${telegram_id}`, {
+    const res = await fetch(`${API_BASE}/quizes/${quizId}/questions?locale=${locale}&include_correct=${include_correct}&current_user_telegram_id=${telegram_id}`, {
       headers: {
         "Accept": "application/json",
         "ngrok-skip-browser-warning": "1"
@@ -178,9 +178,9 @@ const ApiClient = {
   }
   },
 
-  listEvents: async (telegram_id) => {
+  listEvents: async () => {
     try {
-      const res = await fetch(`${API_BASE}/events/?telegram_id=${telegram_id}`, {
+      const res = await fetch(`${API_BASE}/events/?current_user_telegram_id=1234`, {
         method: "GET", 
         headers: { 
           "Accept": "application/json",
@@ -200,7 +200,7 @@ const ApiClient = {
 
   sendAnswer: async (telegramId, questionId, quizId, answers, locale) => {
     try {
-      const res = await fetch(`${API_BASE}/quizes/answer?telegram_id=${telegramId}`, {
+      const res = await fetch(`${API_BASE}/quizes/answer?current_user_telegram_id=${telegramId}`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

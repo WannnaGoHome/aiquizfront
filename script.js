@@ -469,9 +469,9 @@ function renderOptions(options) {
   });
 }
 
-async function getActiveEventId(telegramId) {
+async function getActiveEventId() {
   try {
-    const events = await ApiClient.listEvents(telegramId);
+    const events = await ApiClient.listEvents();
     if (!events || !events.length) throw new Error("Нет доступных событий");
 
     const active = events.find(e => String(e?.game_status || '').trim().toLowerCase() === "started");
