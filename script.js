@@ -281,7 +281,7 @@ registrationForm.addEventListener("submit", async (e) => {
     applyTranslations(document);
 
     console.log("✅ Пользователь вошёл:", appState);
-
+    primeAudio();
     showState('waiting');  
     startPolling();       
   } catch (err) {
@@ -339,6 +339,7 @@ async function finishGamePhase() {
         localStorage.setItem(key, JSON.stringify({ completed: true }));
       }
     }
+    stopBg();
 
     if (phase.game_status === "finished") {
       showState("finished");
@@ -421,6 +422,7 @@ async function checkAndStartGame() {
         const firstType = questions[0]?.type;
         showState(firstType === "open" ? "game-open" : "game");
         nextQuestion();
+        startBg(0.18); 
 
         localStorage.setItem(key, JSON.stringify({ inProgress: true }));
       }
@@ -508,6 +510,7 @@ async function handleOptionClick(index) {
 
     selectedBtn.classList.remove("selected");
     selectedBtn.classList.add(isCorrect? "correct" : "incorrect");
+    playSfx(isCorrect ? 'correct' : 'wrong', isCorrect ? 1 : 0.9);
   } catch (err) {
     console.error("Ошибка при отправке:", err);
     selectedBtn.classList.remove("selected");
@@ -596,6 +599,7 @@ function logout() {
   appState.userId = null;
   appState.userNickname = '';
   nicknameInput.value = '';
+  stopBg();
   showState('registration');
 }
 
@@ -610,4 +614,59 @@ document.addEventListener("DOMContentLoaded", () => {
   applyTranslations(document);
   startPolling();
   checkAndStartGame().catch(e => console.error("Стартовая проверка игры:", e));
+});
+
+// === SFX ===
+const SFX = {
+  bg      : document.getElementById('sfx-bg'),
+  correct : document.getElementById('sfx-correct'),
+  wrong   : document.getElementById('sfx-wrong'),
+};
+
+let sfxEnabled = true;            // переключатель, если нужно
+let audioPrimed = false;          // разлочка для iOS
+
+// разлочка звука при первом жесте
+function primeAudio() {
+  if (audioPrimed) return;
+  audioPrimed = true;
+  // одноразово пытаемся запустить и тут же остановить
+  const a = SFX.correct;
+  a.volume = 0;
+  a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(()=>{});
+}
+
+// универсальное проигрывание коротких эффектов
+function playSfx(name, vol = 1) {
+  if (!sfxEnabled) return;
+  const el = SFX[name];
+  if (!el) return;
+  try {
+    el.currentTime = 0;
+    el.volume = vol;
+    el.play().catch(()=>{});
+  } catch(_) {}
+}
+
+// фоновая музыка (луп)
+function startBg(vol = 0.2) {
+  if (!sfxEnabled) return;
+  const bg = SFX.bg;
+  if (!bg) return;
+  bg.volume = vol;
+  // если уже играет, повторно не запускаем
+  if (!bg.paused) return;
+  bg.play().catch(()=>{});
+}
+function stopBg() {
+  const bg = SFX.bg;
+  if (!bg) return;
+  try { bg.pause(); } catch(_) {}
+  bg.currentTime = 0;
+}
+
+// опционально: при сворачивании приглушать
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopBg();
+  else if (appState.currentState === 'game' || appState.currentState === 'game-open') startBg();
 });
