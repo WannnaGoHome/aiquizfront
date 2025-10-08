@@ -134,6 +134,7 @@ input, textarea {
   color: var(--tg-text-color);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  margin-bottom: 12px;
 }
 input:focus, textarea:focus {
   outline: none;
