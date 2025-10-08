@@ -16,6 +16,8 @@ const I18N = {
     app: { title: "🎯 Квиз-игра" },
     registration: {
       subtitle: "Зарегистрируйтесь для участия. Введите ваше имя и фамилию:",
+      firstname_ph: "Введите фамилию",
+      lastname_ph: "Введите имя",
       nickname_ph: "Введите никнейм",
       choose_lang: "Выберите язык / Select language",
       lang_ru: "Русский",
@@ -63,6 +65,8 @@ const I18N = {
     app: { title: "🎯 Quiz Game" },
     registration: {
       subtitle: "Register to join. Enter your first and last name:",
+      firstname_ph: "Enter First name",
+      lastname_ph: "Enter Last name",
       nickname_ph: "Enter nickname",
       choose_lang: "Select language / Выберите язык",
       lang_ru: "Русский",
@@ -110,7 +114,9 @@ const I18N = {
     app: { title: "🎯 Квиз ойыны" },
     registration: {
       subtitle: "Қатысу үшін тіркеліңіз. Атыңыз бен тегіңізді енгізіңіз:",
-      nickname_ph: "Лақап атыңызды енгізіңіз",
+      firstname_ph: "Фамилияңызды енгізіңіз",
+      lastname_ph: "Атыңызды енгізіңіз",
+      nickname_ph: "Никнеймді енгізіңіз",
       choose_lang: "Тілді таңдаңыз / Select language",
       lang_ru: "Орыс тілі",
       lang_en: "English",
@@ -238,6 +244,8 @@ applyTranslations(document);
 
 const registrationForm = document.getElementById("registration-form");
 const nicknameInput = document.getElementById("nickname-input");
+const firstNameInput = document.getElementById("firstname-input");
+const lastNameInput = document.getElementById("lastname-input");
 const registrationError = document.getElementById("registration-error");
 
 document.addEventListener('change', (e) => {
@@ -252,14 +260,16 @@ document.addEventListener('change', (e) => {
 registrationForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const nickname = nicknameInput.value.trim();
+  const firstName = firstNameInput.value.trim();
+  const lastName = lastNameInput.value.trim();
   const lang = (new FormData(registrationForm).get('lang') || appState.lang || 'ru').toLowerCase();
-  if (!nickname) return;
+  if (!nickname || !firstName || !lastName) return;
 
   try {
     registrationError.classList.add("hidden");
     console.log("🚀 Начало процесса регистрации/авторизации...");
 
-    const userData = await ApiClient.registerOrGetUser(telegramId, nickname);
+    const userData = await ApiClient.registerOrGetUser(telegramId, nickname, firstName, lastName);
 
     appState.userId = userData.id;
     appState.userNickname = userData.nickname;

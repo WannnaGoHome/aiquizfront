@@ -22,6 +22,24 @@
         <form id="registration-form">
           <input
             type="text"
+            id="firstname-input"
+            maxlength="40"
+            required
+            placeholder="Enter First name"
+            data-i18n-placeholder="registration.firstname_ph"
+          />
+
+          <input
+            type="text"
+            id="lastname-input"
+            maxlength="40"
+            required
+            placeholder="Enter Last name"
+            data-i18n-placeholder="registration.lastname_ph"
+          />
+
+          <input
+            type="text"
             id="nickname-input"
             maxlength="20"
             required
@@ -43,7 +61,7 @@
                 <span data-i18n="registration.lang_en">English</span>
               </label>
 
-              <label class="lang-option"> <!-- 👈 НОВОЕ -->
+              <label class="lang-option">
                 <input type="radio" name="lang" value="kk" id="lang-kk" />
                 <span data-i18n="registration.lang_kk">Қазақ тілі</span>
               </label>

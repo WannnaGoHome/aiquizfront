@@ -368,34 +368,45 @@ form button { margin-top: 1.5rem; }
   background: rgba(211,47,47,0.1); color: #d32f2f; border: 1px solid var(--error-color);
 }
 .exit-btn:hover { background: var(--error-color); color: white; }
-
 /* ===== ЯЗЫКОВЫЕ КНОПКИ ===== */
 .lang-select { margin-top: 1.5rem; text-align: center; }
 .lang-select h3 { font-size: 1rem; color: var(--tg-text-color); margin-bottom: 0.8rem; }
-.lang-options { display: flex; justify-content: center; gap: 1rem; }
+
+/* контейнер теперь переносит элементы */
+.lang-options {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;              /* 👈 разрешаем перенос */
+}
+
+/* карточки тянутся и переносятся по месту */
 .lang-option {
   display: flex; align-items: center; gap: 8px;
   background: var(--tg-secondary-bg);
   border: 2px solid var(--tg-border-color);
   border-radius: 12px; padding: 10px 16px; cursor: pointer;
   transition: all 0.3s ease; backdrop-filter: blur(8px); box-shadow: var(--shadow-sm);
+
+  flex: 1 1 180px;              /* 👈 базовая ширина ~180px, можно переносить */
+  max-width: 280px;             /* 👈 не растягивать слишком сильно на широких */
+  min-width: 140px;             /* 👈 и не сжимать слишком сильно */
 }
+
 .lang-option:hover { border-color: var(--tg-button-color); transform: translateY(-2px); }
 .lang-option input {
   accent-color: var(--tg-button-color);
-  transform: none;       
-  width: 20px;        
-  height: 20px;
-  margin: 0;            
-  flex: 0 0 20px;       
-  vertical-align: middle; 
+  transform: none;
+  width: 20px; height: 20px;
+  margin: 0; flex: 0 0 20px; vertical-align: middle;
 }
-.lang-option span {
-  line-height: 20px;     
-}
+.lang-option span { line-height: 20px; }
+
+/* тема тёмная остаётся как была */
 html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.15); }
 .lang-option span { color: var(--tg-text-color); font-weight: 500; user-select: none; }
 
+/* ===== АДАПТИВ ===== */
 @media (max-width: 480px) {
   .container { padding: 16px; }
   h1 { font-size: 1.5rem; }
@@ -403,6 +414,19 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   .timer { font-size: 2rem; }
   .answer-actions { flex-direction: column; }
   .btn { padding: 14px 24px; }
+
+  /* На узких экранах — по одному в ряд */
+  .lang-options { justify-content: stretch; }
+  .lang-option {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
+
+/* Совсем узкие устройства (например, 320px) — чуть меньше отступов */
+@media (max-width: 360px) {
+  .lang-options { gap: 0.6rem; }
+  .lang-option { padding: 8px 12px; }
 }
 
 .question-block {

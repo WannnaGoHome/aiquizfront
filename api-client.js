@@ -1,4 +1,4 @@
-const API_BASE = "https://56de7dc3b07a.ngrok-free.app";
+const API_BASE = "https://ai-bot-backend-ghm4.onrender.com";
 
 const ApiClient = {
 
@@ -36,16 +36,21 @@ const ApiClient = {
     }
   },
 
-  registerUser: async (telegramId, nickname) => {
+  registerUser: async (telegramId, nickname, firstName, lastName) => {
     try {
-      const res = await fetch(`${API_BASE}/users/register/?telegram_id=1234`, {
+      const res = await fetch(`${API_BASE}/users/register/`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Accept": "application/json",
           "ngrok-skip-browser-warning": "1"
         },
-        body: JSON.stringify({ telegram_id: telegramId, nickname })
+        body: JSON.stringify({ 
+          telegram_id: telegramId, 
+          nickname: nickname,
+          first_name: firstName,
+          last_name: lastName,
+         })
       });
 
       const contentType = res.headers.get("content-type") || "";
@@ -71,7 +76,7 @@ const ApiClient = {
     }
   },
 
-  registerOrGetUser: async (telegramId, nickname) => {
+  registerOrGetUser: async (telegramId, nickname,  firstName, lastName) => {
     console.log("🔍 Проверяем существующего пользователя...");
     let user = null;
     try {
@@ -86,7 +91,7 @@ const ApiClient = {
       }
     }
 
-    const newUser = await ApiClient.registerUser(telegramId, nickname);
+    const newUser = await ApiClient.registerUser(telegramId, nickname, firstName, lastName);
     console.log("✅ Новый пользователь зарегистрирован:", newUser);
     return newUser;
   },
