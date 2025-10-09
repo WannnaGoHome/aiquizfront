@@ -398,7 +398,7 @@ async function checkAndStartGame() {
         return;
       }
 
-      if (appState.currentState !== 'game' && appState.currentState !== 'game-open') {
+      if (appState.currentState !== 'game' && appState.currentState !== 'game-open' && appState.currentState !== 'game-image') {
         currentLang = appState.lang;
 
         const rawQuestions = await ApiClient.listQuestions(activeQuiz.id, currentLang, true, telegramId);
@@ -419,8 +419,16 @@ async function checkAndStartGame() {
           return;
         }
 
+        // Определяем начальный экран по типу первого вопроса
         const firstType = questions[0]?.type;
-        showState(firstType === "open" ? "game-open" : "game");
+        if (firstType === "image") {
+          showState("game-image");
+        } else if (firstType === "open") {
+          showState("game-open");
+        } else {
+          showState("game");
+        }
+        
         nextQuestion();
         startBg(0.18); 
 
@@ -558,12 +566,8 @@ function nextQuestion() {
   totEl.textContent = String(questions.length);
   updateQuestionProgressLabel();
 
-  qTextEl.textContent = qText(q, currentLang);
-
-  // Берем длительность из вопроса, по умолчанию 25 секунд
-  let timer = q?.duration_seconds || 25;
+   let timer = q?.duration_seconds || 25;
   
-  // Форматирование времени в MM:SS
   const fmt = s => {
     const minutes = Math.floor(s / 60);
     const seconds = s % 60;
@@ -583,15 +587,22 @@ function nextQuestion() {
     }
   }, 1000);
 
-  if (q.type === "single") {
+  // Определяем тип вопроса и показываем соответствующий экран
+  if (q.type === "image") {
+    showState("game-image");
+    renderImageQuestion(q);
+  } else if (q.type === "single") {
+    showState("game");
+    qTextEl.textContent = qText(q, currentLang);
     renderOptions(qOptions(q, currentLang));
-  } else { 
+  } else {
+    showState("game-open");
+    qTextEl.textContent = qText(q, currentLang);
     const textarea = qs("answer-textarea");
     const submitBtn = qs("submit-answer-btn");
     if (textarea && submitBtn) {
       textarea.setAttribute('placeholder', t('game.answer_ph'));
       submitBtn.textContent = t('game.submit');
-
       submitBtn.disabled = false;
       submitBtn.onclick = async () => {
         submitBtn.disabled = true;
@@ -600,6 +611,109 @@ function nextQuestion() {
       };
     }
   }
+}
+
+function renderImageQuestion(q) {
+  const imagesGrid = document.getElementById("images-grid");
+  const optionsContainer = qs("options");
+  
+  if (!imagesGrid || !optionsContainer) return;
+
+  // Очищаем контейнеры
+  imagesGrid.innerHTML = "";
+  optionsContainer.innerHTML = "";
+
+  // Получаем URL картинок из вопроса
+  const imageUrls = q?.image_urls || [];
+  const options = qOptions(q, currentLang);
+
+  // Рендерим картинки
+  imageUrls.forEach((url, index) => {
+    const imageOption = document.createElement("div");
+    imageOption.className = "image-option";
+    imageOption.dataset.index = index;
+    
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = `Вариант ${String.fromCharCode(65 + index)}`;
+    img.loading = "lazy";
+    
+    const label = document.createElement("div");
+    label.className = "image-label";
+    label.textContent = String.fromCharCode(65 + index);
+    
+    imageOption.appendChild(img);
+    imageOption.appendChild(label);
+    imagesGrid.appendChild(imageOption);
+  });
+
+  // Рендерим варианты ответов
+  options.forEach((opt, i) => {
+    const btn = document.createElement("div");
+    btn.className = "answer-option";
+    btn.dataset.index = i;
+    btn.textContent = opt;
+    btn.onclick = () => handleImageOptionClick(i);
+    optionsContainer.appendChild(btn);
+  });
+}
+
+// Обработчик клика для вопросов с картинками
+async function handleImageOptionClick(index) {
+  const q = questions[questionIndex];
+  const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
+  const selectedImage = document.querySelector(`.image-option[data-index="${index}"]`);
+
+  // Блокируем все варианты
+  document.querySelectorAll(".answer-option").forEach(btn => {
+    btn.classList.add("disabled");
+    btn.style.pointerEvents = "none";
+  });
+  
+  document.querySelectorAll(".image-option").forEach(img => {
+    img.style.pointerEvents = "none";
+  });
+
+  selectedBtn.classList.add("selected");
+  if (selectedImage) selectedImage.classList.add("selected");
+
+  try {
+    const chosenOption = qOptions(q)[index];
+    const res = await ApiClient.sendAnswer(
+      telegramId,
+      q.id,
+      q.quiz_id ?? 1,
+      [chosenOption],
+      currentLang
+    );
+    
+    console.log("✅ Ответ отправлен:", res);
+    const isCorrect = !!(res?.awarded_points != 0);
+
+    selectedBtn.classList.remove("selected");
+    selectedBtn.classList.add(isCorrect ? "correct" : "incorrect");
+    
+    if (selectedImage) {
+      selectedImage.classList.remove("selected");
+      selectedImage.classList.add(isCorrect ? "correct" : "incorrect");
+    }
+    
+    playSfx(isCorrect ? 'correct' : 'wrong', isCorrect ? 1 : 0.9);
+  } catch (err) {
+    console.error("Ошибка при отправке:", err);
+    selectedBtn.classList.remove("selected");
+    selectedBtn.classList.add("incorrect");
+    
+    if (selectedImage) {
+      selectedImage.classList.remove("selected");
+      selectedImage.classList.add("incorrect");
+    }
+  }
+
+  setTimeout(() => {
+    questionIndex++;
+    nextQuestion();
+  }, 1500);
 }
 
 function logout() {
@@ -624,17 +738,15 @@ document.addEventListener("DOMContentLoaded", () => {
   checkAndStartGame().catch(e => console.error("Стартовая проверка игры:", e));
 });
 
-// === SFX ===
 const SFX = {
   bg      : document.getElementById('sfx-bg'),
   correct : document.getElementById('sfx-correct'),
   wrong   : document.getElementById('sfx-wrong'),
 };
 
-let sfxEnabled = true;            // переключатель, если нужно
-let audioPrimed = false;          // разлочка для iOS
+let sfxEnabled = true;          
+let audioPrimed = false;      
 
-// разлочка звука при первом жесте
 function primeAudio() {
   if (audioPrimed) return;
   audioPrimed = true;
@@ -644,7 +756,6 @@ function primeAudio() {
   a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(()=>{});
 }
 
-// универсальное проигрывание коротких эффектов
 function playSfx(name, vol = 1) {
   if (!sfxEnabled) return;
   const el = SFX[name];
@@ -656,7 +767,6 @@ function playSfx(name, vol = 1) {
   } catch(_) {}
 }
 
-// фоновая музыка (луп)
 function startBg(vol = 0.2) {
   if (!sfxEnabled) return;
   const bg = SFX.bg;
@@ -673,7 +783,6 @@ function stopBg() {
   bg.currentTime = 0;
 }
 
-// опционально: при сворачивании приглушать
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopBg();
   else if (appState.currentState === 'game' || appState.currentState === 'game-open') startBg();

@@ -214,6 +214,43 @@
       </div>
     </div>
 
+    <!-- 3.2) ИГРА — ВАРИАНТЫ ОТВЕТОВ С КАРТИНКОЙ -->
+    <div id="state-game-image" class="state hidden">
+    <div class="container">
+
+        <!-- Шапка вопроса -->
+        <div class="question-header">
+        <div class="timer-badge panel">
+            <div id="question-timer" class="timer">00:25</div>
+        </div>
+
+        <div id="question-progress" data-i18n="game.question_of">
+            Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span>
+        </div>
+        </div>
+
+        <!-- Прогресс-бар -->
+        <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        </div>
+
+        <!-- Текст вопроса -->
+        <div class="question-block panel question-card">
+        <h2 id="question-text">Угадай, которая из картинок сгенерирована при помощи искусственного интеллекта.</h2>
+        </div>
+
+        <!-- Сетка картинок -->
+        <div class="images-grid" id="images-grid">
+        <!-- Картинки будут добавляться динамически -->
+        </div>
+
+        <!-- Варианты ответов -->
+        <div id="options" class="answers-grid"></div>
+    </div>
+    </div>
+
     <!-- 4) МЕЖДУ ВОПРОСАМИ -->
     <div id="state-between" class="state hidden">
       <div class="container">
