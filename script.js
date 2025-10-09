@@ -560,8 +560,16 @@ function nextQuestion() {
 
   qTextEl.textContent = qText(q, currentLang);
 
-  let timer = 25;
-  const fmt = s => `00:${s < 10 ? '0' + s : s}`;
+  // Берем длительность из вопроса, по умолчанию 25 секунд
+  let timer = q?.duration_seconds || 25;
+  
+  // Форматирование времени в MM:SS
+  const fmt = s => {
+    const minutes = Math.floor(s / 60);
+    const seconds = s % 60;
+    return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+  };
+  
   timerEl.textContent = fmt(timer);
 
   if (intervalId) clearInterval(intervalId);
