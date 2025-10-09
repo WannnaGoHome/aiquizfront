@@ -1,15 +1,14 @@
 
 const tg = window.Telegram?.WebApp;
 tg?.expand();
+const telegramUser = tg?.initDataUnsafe?.user;
+const telegramId = telegramUser?.id;
 
 function applyTheme() {
   document.documentElement.dataset.theme = tg?.colorScheme === 'dark' ? 'dark' : 'light';
 }
 applyTheme();
 tg?.onEvent('themeChanged', applyTheme);
-
-const telegramUser = tg?.initDataUnsafe?.user;
-const telegramId = telegramUser?.id;
 
 const I18N = {
   ru: {
@@ -41,7 +40,8 @@ const I18N = {
       question_label: "Вопрос",
       loading_question: "Текст текущего вопроса загружается...",
       answer_ph: "Введите ваш развернутый ответ здесь...",
-      submit: "Отправить ответ"
+      submit: "Отправить ответ",
+      image_question: "Угадай, которая из картинок сгенерирована при помощи искусственного интеллекта."
     },
     between: {
       title: "Ответ принят!",
@@ -90,7 +90,8 @@ const I18N = {
       question_label: "Question",
       loading_question: "Loading the current question...",
       answer_ph: "Type your detailed answer here...",
-      submit: "Submit answer"
+      submit: "Submit answer",
+      image_question: "Guess which of these images was generated using artificial intelligence."
     },
     between: {
       title: "Answer received!",
@@ -139,7 +140,8 @@ const I18N = {
       question_label: "Сұрақ",
       loading_question: "Сұрақтың мәтіні жүктелуде...",
       answer_ph: "Толық жауабыңызды осында енгізіңіз...",
-      submit: "Жауапты жіберу"
+      submit: "Жауапты жіберу",
+      image_question: "Жасанды интеллект көмегімен қай сурет жасалғанын тап."
     },
     between: {
       title: "Жауап қабылданды!",
@@ -188,6 +190,11 @@ function applyTranslations(root = document) {
 
   // Строка "Вопрос X/Y" — строим заново на текущем экране
   updateQuestionProgressLabel();
+
+  const imageQuestionText = document.querySelector('#state-game-image #question-text');
+  if (imageQuestionText) {
+    imageQuestionText.textContent = t('game.image_question', lang);
+  }
 }
 
 function quizKey(eventId, quizId) {
@@ -619,15 +626,12 @@ function renderImageQuestion(q) {
   
   if (!imagesGrid || !optionsContainer) return;
 
-  // Очищаем контейнеры
   imagesGrid.innerHTML = "";
   optionsContainer.innerHTML = "";
 
-  // Получаем URL картинок из вопроса
   const imageUrls = q?.image_urls || [];
   const options = qOptions(q, currentLang);
 
-  // Рендерим картинки
   imageUrls.forEach((url, index) => {
     const imageOption = document.createElement("div");
     imageOption.className = "image-option";
@@ -647,7 +651,6 @@ function renderImageQuestion(q) {
     imagesGrid.appendChild(imageOption);
   });
 
-  // Рендерим варианты ответов
   options.forEach((opt, i) => {
     const btn = document.createElement("div");
     btn.className = "answer-option";
@@ -658,13 +661,11 @@ function renderImageQuestion(q) {
   });
 }
 
-// Обработчик клика для вопросов с картинками
 async function handleImageOptionClick(index) {
   const q = questions[questionIndex];
   const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
   const selectedImage = document.querySelector(`.image-option[data-index="${index}"]`);
 
-  // Блокируем все варианты
   document.querySelectorAll(".answer-option").forEach(btn => {
     btn.classList.add("disabled");
     btn.style.pointerEvents = "none";
