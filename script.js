@@ -620,44 +620,23 @@ function nextQuestion() {
   }
 }
 
+// Функция для рендеринга вопроса с одной картинкой
 function renderImageQuestion(q) {
-  const imagesGrid = document.getElementById("images-grid");
+  const singleImageContainer = document.querySelector('.single-image-container');
+  const collageImage = document.querySelector('.collage-image');
   const optionsContainer = qs("options");
   
-  if (!imagesGrid || !optionsContainer) return;
+  if (!singleImageContainer || !collageImage || !optionsContainer) return;
 
-  imagesGrid.innerHTML = "";
+  // Очищаем варианты ответов
   optionsContainer.innerHTML = "";
 
-  const imageUrls = [
-    "./picture.jpg",
-    "./picture.jpg", 
-    "./picture.jpg",
-    "./picture.jpg"
-  ];
-  
-  const options = qOptions(q, currentLang);
-
-  imageUrls.forEach((url, index) => {
-    const imageOption = document.createElement("div");
-    imageOption.className = "image-option";
-    imageOption.dataset.index = index;
-    
-    const img = document.createElement("img");
-    img.src = url;
-    img.alt = `Вариант ${String.fromCharCode(65 + index)}`;
-    img.loading = "lazy";
-    
-    const label = document.createElement("div");
-    label.className = "image-label";
-    label.textContent = String.fromCharCode(65 + index);
-    
-    imageOption.appendChild(img);
-    imageOption.appendChild(label);
-    imagesGrid.appendChild(imageOption);
-  });
+  // Устанавливаем картинку (можно оставить фиксированной или брать из вопроса)
+  collageImage.src = "./picture.jpg";
+  collageImage.alt = "Варианты картинок A, B, C, D";
 
   // Рендерим варианты ответов
+  const options = qOptions(q, currentLang);
   options.forEach((opt, i) => {
     const btn = document.createElement("div");
     btn.className = "answer-option";
@@ -668,22 +647,18 @@ function renderImageQuestion(q) {
   });
 }
 
+// Обработчик клика для вопросов с одной картинкой
 async function handleImageOptionClick(index) {
   const q = questions[questionIndex];
   const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
-  const selectedImage = document.querySelector(`.image-option[data-index="${index}"]`);
 
+  // Блокируем все варианты
   document.querySelectorAll(".answer-option").forEach(btn => {
     btn.classList.add("disabled");
     btn.style.pointerEvents = "none";
   });
-  
-  document.querySelectorAll(".image-option").forEach(img => {
-    img.style.pointerEvents = "none";
-  });
 
   selectedBtn.classList.add("selected");
-  if (selectedImage) selectedImage.classList.add("selected");
 
   try {
     const chosenOption = qOptions(q)[index];
@@ -701,21 +676,11 @@ async function handleImageOptionClick(index) {
     selectedBtn.classList.remove("selected");
     selectedBtn.classList.add(isCorrect ? "correct" : "incorrect");
     
-    if (selectedImage) {
-      selectedImage.classList.remove("selected");
-      selectedImage.classList.add(isCorrect ? "correct" : "incorrect");
-    }
-    
     playSfx(isCorrect ? 'correct' : 'wrong', isCorrect ? 1 : 0.9);
   } catch (err) {
     console.error("Ошибка при отправке:", err);
     selectedBtn.classList.remove("selected");
     selectedBtn.classList.add("incorrect");
-    
-    if (selectedImage) {
-      selectedImage.classList.remove("selected");
-      selectedImage.classList.add("incorrect");
-    }
   }
 
   setTimeout(() => {
