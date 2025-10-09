@@ -629,7 +629,13 @@ function renderImageQuestion(q) {
   imagesGrid.innerHTML = "";
   optionsContainer.innerHTML = "";
 
-  const imageUrls = q?.image_urls || [];
+  const imageUrls = [
+    "./picture.jpg",
+    "./picture.jpg", 
+    "./picture.jpg",
+    "./picture.jpg"
+  ];
+  
   const options = qOptions(q, currentLang);
 
   imageUrls.forEach((url, index) => {
@@ -651,6 +657,7 @@ function renderImageQuestion(q) {
     imagesGrid.appendChild(imageOption);
   });
 
+  // Рендерим варианты ответов
   options.forEach((opt, i) => {
     const btn = document.createElement("div");
     btn.className = "answer-option";
