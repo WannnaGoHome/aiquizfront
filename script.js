@@ -21,6 +21,7 @@ const I18N = {
       choose_lang: "Выберите язык / Select language",
       lang_ru: "Русский",
       lang_en: "English",
+      lang_kk: "Қазақ тілі",
       join_btn: "Участвовать!"
     },
     waiting: {
@@ -71,6 +72,7 @@ const I18N = {
       choose_lang: "Select language / Выберите язык",
       lang_ru: "Русский",
       lang_en: "English",
+      lang_kk: "Қазақ тілі",
       join_btn: "Join!"
     },
     waiting: {
@@ -121,6 +123,7 @@ const I18N = {
       choose_lang: "Тілді таңдаңыз / Select language",
       lang_ru: "Орыс тілі",
       lang_en: "English",
+      lang_kk: "Қазақ тілі",
       join_btn: "Қатысу!"
     },
     waiting: {
@@ -162,6 +165,22 @@ const I18N = {
     }
   },
 };
+
+function setRegistrationViewMode(mode) {
+  const nameFields = document.querySelector("#registration-form .name-fields");
+  const langSelect = document.querySelector("#registration-form .lang-select");
+
+  if (!nameFields || !langSelect) return;
+
+  if (mode === 'langOnly') {
+    nameFields.classList.add("hidden");
+    langSelect.classList.remove("hidden");
+  } else {
+    nameFields.classList.remove("hidden");
+    langSelect.classList.remove("hidden");
+  }
+}
+
 
 const t = (keyPath, lang) => {
   const l = lang || (window.appState?.lang) || 'ru';
@@ -261,8 +280,14 @@ document.addEventListener('change', (e) => {
     localStorage.setItem('lang', appState.lang);
     syncHtmlLang();
     applyTranslations(document);
+
+    if (appState.userId) {
+      // У пользователя есть аккаунт — оставляем только язык
+      setRegistrationViewMode('langOnly');
+    }
   }
 });
+
 
 registrationForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -689,30 +714,38 @@ async function handleImageOptionClick(index) {
   }, 1500);
 }
 
-function logout() {
+// Показываем выбор языка без разлогина
+function showLanguagePicker() {
+  stopPolling();
+  // ВАЖНО: НЕ обнуляем appState.userId, чтобы пользователь оставался "зарегистрирован"
+  stopBg();
+  setRegistrationViewMode('langOnly');
+  showState('registration');
+}
+
+// Если прям нужен настоящий логаут — оставь отдельную функцию:
+function logoutHard() {
   stopPolling();   
   appState.userId = null;
   appState.userNickname = '';
   nicknameInput.value = '';
-
-  // Скрываем поле имени, показываем только выбор языка
-  document.querySelector("#registration-form .name-fields")?.classList.add("hidden");
-  document.querySelector("#registration-form .lang-select")?.classList.remove("hidden");
-
   stopBg();
+  setRegistrationViewMode('full');
   showState('registration');
 }
-
 
 document.addEventListener("DOMContentLoaded", async () => {
   const ru = document.getElementById('lang-ru');
   const en = document.getElementById('lang-en');
-  const kk = document.getElementById('lang-kk');  
+  const kk = document.getElementById('lang-kk');
   if (ru && en && kk) {
     (appState.lang === 'ru' ? ru : appState.lang === 'en' ? en : kk).checked = true;
   }
 
   applyTranslations(document);
+
+  const nameFields = document.querySelector("#registration-form .name-fields");
+  const langSelect = document.querySelector("#registration-form .lang-select");
 
   try {
     console.log("🚀 Проверяем, есть ли пользователь...");
@@ -724,14 +757,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     if (userData && userData.id) {
-      console.log("✅ Пользователь найден, автоматический вход:", userData);
+      console.log("✅ Пользователь найден, автологин:", userData);
 
       appState.userId = userData.id;
       appState.userNickname = userData.nickname;
       appState.points = userData.points;
 
-      nameFields?.classList.add("hidden");
-      langSelect?.classList.remove("hidden");
+      // Показываем только выбор языка
+      setRegistrationViewMode('langOnly');
 
       primeAudio();
       showState("waiting");
@@ -740,17 +773,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    nameFields?.classList.remove("hidden");
-    langSelect?.classList.remove("hidden");
-    console.log("🆕 Пользователь не найден — показываем форму регистрации");
+    console.log("🆕 Не найден — показываем полную форму");
+    setRegistrationViewMode('full');
     showState("registration");
   } catch (err) {
-    console.error("❌ Ошибка при автоматическом входе:", err);
+    console.error("❌ Ошибка при автологине:", err);
+    setRegistrationViewMode('full');
     showState("registration");
-    nameFields?.classList.remove("hidden");
-    langSelect?.classList.remove("hidden");
   }
 });
+
 
 
 const SFX = {
