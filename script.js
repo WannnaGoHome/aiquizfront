@@ -698,7 +698,7 @@ function logout() {
   showState('registration');
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const ru = document.getElementById('lang-ru');
   const en = document.getElementById('lang-en');
   const kk = document.getElementById('lang-kk');  
@@ -707,9 +707,41 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   applyTranslations(document);
-  startPolling();
-  checkAndStartGame().catch(e => console.error("Стартовая проверка игры:", e));
+
+  try {
+    console.log("🚀 Проверяем, есть ли пользователь...");
+    const userData = await ApiClient.registerOrGetUser(
+      telegramId,
+      "autouser",
+      "auto",
+      "user"
+    );
+
+    if (userData && userData.id) {
+      console.log("✅ Пользователь найден, автоматический вход:", userData);
+
+      appState.userId = userData.id;
+      appState.userNickname = userData.nickname;
+      appState.points = userData.points;
+
+      // Если пользователь уже зарегистрирован — показываем только язык и кнопку выхода
+      document.querySelector("#registration-form .name-fields")?.classList.add("hidden");
+
+      primeAudio();
+      showState("waiting");
+      startPolling();
+      checkAndStartGame().catch(e => console.error("Стартовая проверка игры:", e));
+      return;
+    }
+
+    console.log("🆕 Пользователь не найден — показываем форму регистрации");
+    showState("registration");
+  } catch (err) {
+    console.error("❌ Ошибка при автоматическом входе:", err);
+    showState("registration");
+  }
 });
+
 
 const SFX = {
   bg      : document.getElementById('sfx-bg'),

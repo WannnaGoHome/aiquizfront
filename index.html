@@ -20,7 +20,8 @@
         </p>
 
         <form id="registration-form">
-          <input
+        <div class="name-fields">
+        <input
             type="text"
             id="firstname-input"
             maxlength="40"
@@ -46,8 +47,8 @@
             placeholder="Enter nickname"
             data-i18n-placeholder="registration.nickname_ph"
           />
-
-          <div class="lang-select">
+        </div>
+        <div class="lang-select">
             <h3 data-i18n="registration.choose_lang">Выберите язык / Select language</h3>
 
             <div class="lang-options">
@@ -55,21 +56,21 @@
             <label class="lang-option">
                 <input type="radio" name="lang" value="kk" id="lang-kk" />
                 <span data-i18n="registration.lang_kk">Қазақ тілі</span>
-              </label>
-              
-              <label class="lang-option">
+            </label>
+
+            <label class="lang-option">
                 <input type="radio" name="lang" value="ru" id="lang-ru" checked />
                 <span data-i18n="registration.lang_ru">Русский</span>
-              </label>
+            </label>
 
-              <label class="lang-option">
+            <label class="lang-option">
                 <input type="radio" name="lang" value="en" id="lang-en" />
                 <span data-i18n="registration.lang_en">English</span>
-              </label>
+            </label>
 
               
             </div>
-          </div>
+        </div>
 
           <button type="submit" id="register-btn" data-i18n="registration.join_btn">
             Участвовать!
