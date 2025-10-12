@@ -466,3 +466,5 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   border: 2px solid var(--tg-border-color);
   box-shadow: var(--shadow-md);
 }
+
+.hidden { display: none !important; }

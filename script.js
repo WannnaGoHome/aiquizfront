@@ -34,7 +34,7 @@ const I18N = {
       text: "Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа!"
     },
     common: {
-      logout: "Выйти"
+      logout: "Поменять язык"
     },
     game: {
       question_label: "Вопрос",
@@ -84,7 +84,7 @@ const I18N = {
       text: "When the game ends, we'll count the points and announce the stage results!"
     },
     common: {
-      logout: "Log out"
+      logout: "Change the language"
     },
     game: {
       question_label: "Question",
@@ -134,7 +134,7 @@ const I18N = {
       text: "Ойын аяқталған бойда ұпайлар есептеліп, осы кезеңнің нәтижелері жарияланады!"
     },
     common: {
-      logout: "Шығу және ауыстыру"
+      logout: "Тілді өзгерту"
     },
     game: {
       question_label: "Сұрақ",
@@ -694,9 +694,15 @@ function logout() {
   appState.userId = null;
   appState.userNickname = '';
   nicknameInput.value = '';
+
+  // Скрываем поле имени, показываем только выбор языка
+  document.querySelector("#registration-form .name-fields")?.classList.add("hidden");
+  document.querySelector("#registration-form .lang-select")?.classList.remove("hidden");
+
   stopBg();
   showState('registration');
 }
+
 
 document.addEventListener("DOMContentLoaded", async () => {
   const ru = document.getElementById('lang-ru');
@@ -724,8 +730,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       appState.userNickname = userData.nickname;
       appState.points = userData.points;
 
-      // Если пользователь уже зарегистрирован — показываем только язык и кнопку выхода
-      document.querySelector("#registration-form .name-fields")?.classList.add("hidden");
+      nameFields?.classList.add("hidden");
+      langSelect?.classList.remove("hidden");
 
       primeAudio();
       showState("waiting");
@@ -734,11 +740,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    nameFields?.classList.remove("hidden");
+    langSelect?.classList.remove("hidden");
     console.log("🆕 Пользователь не найден — показываем форму регистрации");
     showState("registration");
   } catch (err) {
     console.error("❌ Ошибка при автоматическом входе:", err);
     showState("registration");
+    nameFields?.classList.remove("hidden");
+    langSelect?.classList.remove("hidden");
   }
 });
 
