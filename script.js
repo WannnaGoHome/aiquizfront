@@ -167,20 +167,20 @@ const I18N = {
 };
 
 function setRegistrationViewMode(mode) {
-  const nameFields = document.querySelector("#registration-form .name-fields");
-  const langSelect = document.querySelector("#registration-form .lang-select");
-
-  if (!nameFields || !langSelect) return;
-
   if (mode === 'langOnly') {
-    nameFields.classList.add("hidden");
-    langSelect.classList.remove("hidden");
+    nameFields.classList.add('hidden');
+    langSelect.classList.remove('hidden');
+    toggleNameFields(false);
+    registrationForm.noValidate = true;     // отключаем HTML5-валидацию
+    setJoinButtonMode('langOnly');
   } else {
-    nameFields.classList.remove("hidden");
-    langSelect.classList.remove("hidden");
+    nameFields.classList.remove('hidden');
+    langSelect.classList.remove('hidden');
+    toggleNameFields(true);
+    registrationForm.noValidate = false;
+    setJoinButtonMode('full');
   }
 }
-
 
 const t = (keyPath, lang) => {
   const l = lang || (window.appState?.lang) || 'ru';
@@ -269,10 +269,46 @@ syncHtmlLang();
 applyTranslations(document);
 
 const registrationForm = document.getElementById("registration-form");
+const joinBtn = document.getElementById("register-btn");
+const nameFields = document.querySelector("#registration-form .name-fields");
+const langSelect = document.querySelector("#registration-form .lang-select");
 const nicknameInput = document.getElementById("nickname-input");
 const firstNameInput = document.getElementById("firstname-input");
 const lastNameInput = document.getElementById("lastname-input");
 const registrationError = document.getElementById("registration-error");
+
+function toggleNameFields(enabled) {
+  document
+    .querySelectorAll('#registration-form .name-fields input')
+    .forEach(i => { i.disabled = !enabled; i.required = !!enabled; });
+}
+
+function setJoinButtonMode(mode) {
+  if (mode === 'langOnly') {
+    // кнопка НЕ сабмитит форму, просто сохраняет язык и переводит на waiting
+    joinBtn.type = 'button';
+    joinBtn.onclick = async () => {
+      const lang = (new FormData(registrationForm).get('lang') || 'ru').toLowerCase();
+      appState.lang = lang;
+      localStorage.setItem('lang', lang);
+      syncHtmlLang();
+      applyTranslations(document);
+      // если пользователь уже авторизован — просто уходим на ожидание
+      if (appState.userId) {
+        showState('waiting');
+        startPolling();
+        checkAndStartGame().catch(console.error);
+      } else {
+        // если вдруг не залогинен — покажем поля
+        setRegistrationViewMode('full');
+      }
+    };
+  } else {
+    // обычный submit
+    joinBtn.type = 'submit';
+    joinBtn.onclick = null;
+  }
+}
 
 document.addEventListener('change', (e) => {
   if (e.target && e.target.name === 'lang') {
