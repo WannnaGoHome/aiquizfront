@@ -468,3 +468,22 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
 }
 
 .hidden { display: none !important; }
+
+#countdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;              /* выше всего */
+  background: #000;           /* чёрный фон под видео */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#countdown-overlay.hidden { display: none; }
+
+#countdown-video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;          /* заполняем экран без полос */
+}
+

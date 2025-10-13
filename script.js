@@ -496,7 +496,9 @@ async function checkAndStartGame() {
         } else {
           showState("game");
         }
-        
+
+        await playCountdownVideoOncePerQuiz(activeQuiz.id);
+
         nextQuestion();
         startBg(0.18); 
 
@@ -870,3 +872,54 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopBg();
   else if (appState.currentState === 'game' || appState.currentState === 'game-open') startBg();
 });
+
+// Флаг: какие квизы уже показывали отсчёт
+const countdownPlayedForQuiz = new Set();
+
+function playCountdownVideoOncePerQuiz(quizId) {
+  return new Promise((resolve) => {
+    if (!quizId || countdownPlayedForQuiz.has(quizId)) {
+      resolve(false);
+      return;
+    }
+
+    const overlay = document.getElementById('countdown-overlay');
+    const video = document.getElementById('countdown-video');
+    if (!overlay || !video) {
+      resolve(false);
+      return;
+    }
+
+    // На время видео — приглушаем фон
+    const wasBgPlaying = !SFX.bg?.paused;
+    stopBg();
+
+    // Показали оверлей
+    overlay.classList.remove('hidden');
+
+    // Гарантируем старт (на некоторых девайсах нужен reset currentTime)
+    video.currentTime = 0;
+
+    // Автовоспроизведение разрешено т.к. muted
+    const onFinish = () => {
+      video.removeEventListener('ended', onFinish);
+      video.removeEventListener('error', onFinish);
+      overlay.classList.add('hidden');
+      countdownPlayedForQuiz.add(quizId);
+
+      // Вернём фон если он был включён
+      if (wasBgPlaying) startBg(0.18);
+
+      resolve(true);
+    };
+
+    video.addEventListener('ended', onFinish);
+    video.addEventListener('error', onFinish);
+
+    // Стартуем
+    video.play().catch(() => {
+      // Если не получилось автоплеем — просто скрываем и продолжаем
+      onFinish();
+    });
+  });
+}
