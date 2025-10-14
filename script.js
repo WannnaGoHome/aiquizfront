@@ -542,8 +542,8 @@ function setQuizTitle(quiz) {
     const titleEl = el.querySelector(".quiz-title");
     if (title) {
       titleEl.textContent = title;
-      el.classList.add("show");
       el.classList.remove("hidden");
+      requestAnimationFrame(() => el.classList.add("show"));
     } else {
       el.classList.remove("show");
       setTimeout(() => el.classList.add("hidden"), 300);
