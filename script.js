@@ -538,11 +538,19 @@ function qCorrect(q) { return []; }
 
 function setQuizTitle(quiz) {
   const title = quiz?.name || "";
-  document.querySelectorAll(".quiz-title").forEach(el => {
-    el.textContent = title;
-    el.parentElement?.classList.toggle("hidden", !title);
+  document.querySelectorAll(".quiz-banner").forEach(el => {
+    const titleEl = el.querySelector(".quiz-title");
+    if (title) {
+      titleEl.textContent = title;
+      el.classList.add("show");
+      el.classList.remove("hidden");
+    } else {
+      el.classList.remove("show");
+      setTimeout(() => el.classList.add("hidden"), 300);
+    }
   });
 }
+
 
 function clearQuizTitle() {
   setQuizTitle(null);

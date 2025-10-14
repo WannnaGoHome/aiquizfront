@@ -487,12 +487,32 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   object-fit: cover;          /* заполняем экран без полос */
 }
 
+/* ===== Quiz title banner ===== */
 .quiz-banner {
-  margin-bottom: 8px;
+  background: var(--tg-secondary-bg);
+  border: 2px solid var(--tg-border-color);
+  color: var(--tg-text-color);
+  border-radius: 14px;
+  padding: 10px 16px;
+  text-align: center;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.3px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.4s ease;
 }
-.quiz-title {
-  font-weight: 700;
-  font-size: 1.1rem;
-  line-height: 1.2;
+
+.quiz-banner.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+html[data-theme="dark"] .quiz-banner {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 0 10px rgba(255,255,255,0.05);
 }
 
