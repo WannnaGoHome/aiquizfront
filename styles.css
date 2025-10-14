@@ -488,6 +488,7 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
 }
 
 /* ===== Quiz title banner ===== */
+/* ===== ВЕРХНИЙ БАННЕР С НАЗВАНИЕМ ВИКТОРИНЫ ===== */
 .quiz-banner {
   margin-bottom: 12px;
   position: relative;
