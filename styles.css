@@ -492,9 +492,9 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   margin-top: 6px;
   margin-bottom: 6px;
   text-align: center;
-  font-weight: 600;
-  font-size: 1.15rem;
-  color: var(--tg-theme-button-color, #2a7fff);
+  font-weight: 800;
+  font-size: 10rem;
+  color: var(--tg-theme-button-color, #1565c0);
   opacity: 0;
   transform: translateY(-6px);
   transition: opacity 0.4s ease, transform 0.4s ease;
@@ -507,7 +507,7 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
 
 /* Светлая тема */
 html[data-theme="light"] .quiz-banner {
-  color: #1a73e8;
+  color: #1565c0;
 }
 
 /* Тёмная тема */
