@@ -487,55 +487,36 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   object-fit: cover;          /* заполняем экран без полос */
 }
 
-/* ===== Quiz title banner ===== */
-/* ===== ВЕРХНИЙ БАННЕР С НАЗВАНИЕМ ВИКТОРИНЫ ===== */
+/* ===== ЧИСТЫЙ ТЕКСТОВЫЙ ЗАГОЛОВОК ВИКТОРИНЫ ===== */
 .quiz-banner {
-  margin-bottom: 12px;
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
-.quiz-title {
-  background: rgba(51, 144, 236, 0.08); /* мягкий синий фон */
-  border: 1px solid rgba(51, 144, 236, 0.3);
-  color: var(--tg-text-color);
-  padding: 10px 24px;
-  border-radius: 14px;
-  font-weight: 600;
-  font-size: 1.05rem;
+  margin-top: 6px;
+  margin-bottom: 6px;
   text-align: center;
-  letter-spacing: 0.3px;
-  box-shadow: 0 4px 14px rgba(51,144,236,0.15);
-  backdrop-filter: blur(10px);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--tg-theme-button-color, #2a7fff);
   opacity: 0;
   transform: translateY(-6px);
-  transition: all 0.4s ease;
-  animation: quizTitlePop 0.6s ease forwards;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.quiz-banner.show .quiz-title {
+.quiz-banner.show {
   opacity: 1;
   transform: translateY(0);
 }
 
 /* Светлая тема */
-html[data-theme="light"] .quiz-title {
-  background: rgba(51,144,236,0.08);
-  border-color: rgba(51,144,236,0.25);
-  box-shadow: 0 3px 10px rgba(51,144,236,0.15);
+html[data-theme="light"] .quiz-banner {
+  color: #1a73e8;
 }
 
 /* Тёмная тема */
-html[data-theme="dark"] .quiz-title {
-  background: rgba(51,144,236,0.15);
-  border-color: rgba(51,144,236,0.25);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+html[data-theme="dark"] .quiz-banner {
+  color: #8cb8ff;
 }
 
-/* Мягкая пульсация при появлении */
-@keyframes quizTitlePop {
-  0% { transform: scale(0.95); opacity: 0; }
-  60% { transform: scale(1.03); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+/* Лёгкое "появление" текста */
+@keyframes fadeInText {
+  0% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
