@@ -487,3 +487,12 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   object-fit: cover;          /* заполняем экран без полос */
 }
 
+.quiz-banner {
+  margin-bottom: 8px;
+}
+.quiz-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+

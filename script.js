@@ -408,6 +408,7 @@ async function finishGamePhase() {
       }
     }
     stopBg();
+    clearQuizTitle();
 
     if (phase.game_status === "finished") {
       showState("finished");
@@ -416,6 +417,7 @@ async function finishGamePhase() {
     } else {
       showState("waiting-results");
     }
+
   } catch (e) {
     console.error("Ошибка завершения фазы:", e);
     const adminEl = document.getElementById("admin-notification");
@@ -453,7 +455,7 @@ async function checkAndStartGame() {
 
     const quizzes = await ApiClient.listQuizzes(event_id);
     const activeQuiz = quizzes.find(q => q?.is_active === true);
-
+    setQuizTitle(activeQuiz);
     console.log('status=', status, 'activeQuiz=', activeQuiz);
 
     if (status === "started" && activeQuiz) {
@@ -505,6 +507,7 @@ async function checkAndStartGame() {
         localStorage.setItem(key, JSON.stringify({ inProgress: true }));
       }
     } else {
+      clearQuizTitle();
       if (appState.currentState !== 'waiting' && appState.currentState !== 'registration') {
         showState("waiting");
       }
@@ -532,6 +535,18 @@ function qOptions(q) {
 }
 
 function qCorrect(q) { return []; }
+
+function setQuizTitle(quiz) {
+  const title = quiz?.name || "";
+  document.querySelectorAll(".quiz-title").forEach(el => {
+    el.textContent = title;
+    el.parentElement?.classList.toggle("hidden", !title);
+  });
+}
+
+function clearQuizTitle() {
+  setQuizTitle(null);
+}
 
 function renderOptions(options) {
   const container = qs("options");
@@ -820,8 +835,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     showState("registration");
   }
 });
-
-
 
 const SFX = {
   bg      : document.getElementById('sfx-bg'),
