@@ -541,7 +541,6 @@ function setQuizTitle(quiz) {
   if (el) el.textContent = quiz?.name || "";
 }
 
-
 function clearQuizTitle() {
   setQuizTitle(null);
 }

@@ -500,7 +500,7 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   text-align: center;
   font-weight: 700;
   font-size: 1.4rem;
-  color: #1565c0;
+  color: var(--panel-text);
   text-shadow: 0 2px 4px rgba(13,71,161,.5);
   margin-bottom: 8px;
   line-height: 1.3;
@@ -509,7 +509,6 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
 
 /* Синхронизация цвета с таймером */
 html[data-theme="light"] .question-header .quiz-title {
-  color: var(--tg-text-color);
   text-shadow: 0 2px 4px rgba(13, 71, 161, 0.4);
 }
 
