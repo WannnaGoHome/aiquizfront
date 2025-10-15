@@ -507,15 +507,6 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   animation: fadeInTitle 0.6s ease;
 }
 
-/* Синхронизация цвета с таймером */
-html[data-theme="light"] .question-header .quiz-title {
-  text-shadow: 0 2px 4px rgba(13, 71, 161, 0.4);
-}
-
-html[data-theme="dark"] .question-header .quiz-title {
-  text-shadow: 0 2px 4px rgba(100,181,246,.5);
-}
-
 @media (max-width: 420px) {
   .qh-row { flex-direction: column; gap: 8px; }
 }
