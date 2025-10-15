@@ -187,8 +187,9 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 /* ===== ТАЙМЕР/ХЕДЕР ВОПРОСА ===== */
 .question-header {
   display: flex;
+  flex-direction: column;       
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   padding: 12px 14px;
   margin-bottom: 2rem;
   box-shadow: var(--shadow-sm);
@@ -484,18 +485,23 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
 #countdown-video {
   width: 100vw;
   height: 100vh;
-  object-fit: cover;          /* заполняем экран без полос */
+  object-fit: cover;         
 }
 
-/* ===== ЗАГОЛОВОК ВИКТОРИНЫ (вписанный в Telegram-стиль) ===== */
-/* ===== ЗАГОЛОВОК ВИКТОРИНЫ В ХЕДЕРЕ ===== */
+.qh-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
 .question-header .quiz-title {
   width: 100%;
   text-align: center;
   font-weight: 700;
   font-size: 1.4rem;
-  color: var(--tg-text-color);
-  text-shadow: 0 2px 4px rgba(13, 71, 161, 0.4);
+  color: #1565c0;
+  text-shadow: 0 2px 4px rgba(13,71,161,.5);
   margin-bottom: 8px;
   line-height: 1.3;
   animation: fadeInTitle 0.6s ease;
@@ -508,8 +514,11 @@ html[data-theme="light"] .question-header .quiz-title {
 }
 
 html[data-theme="dark"] .question-header .quiz-title {
-  color: var(--tg-text-color);
-  text-shadow: 0 2px 4px rgba(100, 181, 246, 0.5);
+  text-shadow: 0 2px 4px rgba(100,181,246,.5);
+}
+
+@media (max-width: 420px) {
+  .qh-row { flex-direction: column; gap: 8px; }
 }
 
 @keyframes fadeInTitle {

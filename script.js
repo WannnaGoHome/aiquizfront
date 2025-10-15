@@ -537,18 +537,10 @@ function qOptions(q) {
 function qCorrect(q) { return []; }
 
 function setQuizTitle(quiz) {
-  const titleEl = document.getElementById("quiz-title");
-  if (titleEl) {
-    if (quiz?.name) {
-      titleEl.textContent = quiz.name;
-      titleEl.style.opacity = "1";
-      titleEl.style.transform = "translateY(0)";
-    } else {
-      titleEl.style.opacity = "0";
-      titleEl.style.transform = "translateY(-10px)";
-    }
-  }
+  const el = document.querySelector(".question-header .quiz-title");
+  if (el) el.textContent = quiz?.name || "";
 }
+
 
 function clearQuizTitle() {
   setQuizTitle(null);
