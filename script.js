@@ -537,20 +537,18 @@ function qOptions(q) {
 function qCorrect(q) { return []; }
 
 function setQuizTitle(quiz) {
-  const title = quiz?.name || "";
-  document.querySelectorAll(".quiz-banner").forEach(el => {
-    const titleEl = el.querySelector(".quiz-title");
-    if (title) {
-      titleEl.textContent = title;
-      el.classList.remove("hidden");
-      requestAnimationFrame(() => el.classList.add("show"));
+  const titleEl = document.getElementById("quiz-title");
+  if (titleEl) {
+    if (quiz?.name) {
+      titleEl.textContent = quiz.name;
+      titleEl.style.opacity = "1";
+      titleEl.style.transform = "translateY(0)";
     } else {
-      el.classList.remove("show");
-      setTimeout(() => el.classList.add("hidden"), 300);
+      titleEl.style.opacity = "0";
+      titleEl.style.transform = "translateY(-10px)";
     }
-  });
+  }
 }
-
 
 function clearQuizTitle() {
   setQuizTitle(null);

@@ -487,36 +487,37 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   object-fit: cover;          /* заполняем экран без полос */
 }
 
-/* ===== ЧИСТЫЙ ТЕКСТОВЫЙ ЗАГОЛОВОК ВИКТОРИНЫ ===== */
-.quiz-banner {
-  margin-top: 6px;
-  margin-bottom: 6px;
+/* ===== ЗАГОЛОВОК ВИКТОРИНЫ (вписанный в Telegram-стиль) ===== */
+.quiz-title {
+  display: block;
   text-align: center;
-  font-weight: 800;
-  font-size: 10rem;
-  color: var(--tg-theme-button-color, #1565c0);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  margin-bottom: 1.2rem;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 8px rgba(66, 165, 245, 0.25);
   opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform: translateY(-8px);
+  transition: all 0.5s ease;
+  animation: fadeInTitle 0.6s ease forwards;
 }
 
-.quiz-banner.show {
-  opacity: 1;
-  transform: translateY(0);
+@keyframes fadeInTitle {
+  0%   { opacity: 0; transform: translateY(-10px); }
+  60%  { opacity: 1; transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* Светлая тема */
-html[data-theme="light"] .quiz-banner {
-  color: #1565c0;
+html[data-theme="light"] .quiz-title {
+  text-shadow: 0 2px 6px rgba(33,150,243,0.2);
 }
 
 /* Тёмная тема */
-html[data-theme="dark"] .quiz-banner {
-  color: #8cb8ff;
-}
-
-/* Лёгкое "появление" текста */
-@keyframes fadeInText {
-  0% { opacity: 0; transform: translateY(-6px); }
-  100% { opacity: 1; transform: translateY(0); }
+html[data-theme="dark"] .quiz-title {
+  text-shadow: 0 2px 8px rgba(33,150,243,0.4);
 }
