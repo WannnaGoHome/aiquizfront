@@ -66,6 +66,7 @@ body {
   color: var(--tg-text-color);
   line-height: 1.6;
   min-height: 100vh;
+  user-select: none;
 }
 
 .app-container { min-height: 100vh; }
@@ -513,4 +514,30 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
 @keyframes fadeInTitle {
   0% { opacity: 0; transform: translateY(-6px); }
   100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Anti-screenshot overlay ---- */
+#anti-screenshot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;                 /* ниже #countdown-overlay (9999) */
+  pointer-events: none;
+  opacity: 0;                    /* по умолчанию невидим */
+  transition: opacity .18s ease;
+  /* основной эффект */
+  backdrop-filter: blur(30px) saturate(120%);
+  background: rgba(255,255,255,0.25); 
+  -webkit-backdrop-filter: blur(30px) saturate(120%);
+  will-change: backdrop-filter, opacity;
+}
+
+/* Фолбэк на браузеры без backdrop-filter: блюрим контент */
+html.is-screen-blurred .app-container {
+  filter: blur(20px) saturate(110%);
+  transform: translateZ(0);      /* убирает артефакты при фильтрах */
+}
+
+/* Тёмная тема — чуть темнее поверхность */
+html[data-theme="dark"] #anti-screenshot-overlay {
+  background: rgba(0,0,0,0.35);
 }

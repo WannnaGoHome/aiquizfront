@@ -541,6 +541,15 @@ function setQuizTitle(quiz) {
   if (el) el.textContent = quiz?.name || "";
 }
 
+document.addEventListener('copy', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  // например Ctrl+C, Ctrl+S, Ctrl+P
+  if (e.ctrlKey && ['c','s','p'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+});
+
 function clearQuizTitle() {
   setQuizTitle(null);
 }
@@ -933,3 +942,42 @@ function playCountdownVideoOncePerQuiz(quizId) {
     });
   });
 }
+
+// ===== Anti-screenshot blur =====
+(function setupAntiScreenshot() {
+  const overlayId = 'anti-screenshot-overlay';
+  let overlay = document.getElementById(overlayId);
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = overlayId;
+    document.body.appendChild(overlay);
+  }
+
+  let blurTimer = null;
+  const BLUR_ON_MS  = 0;     // без задержки включаем
+  const BLUR_OFF_MS = 120;   // маленькая задержка на снятие — меньше мерцания
+
+  const setBlur = (on) => {
+    clearTimeout(blurTimer);
+    blurTimer = setTimeout(() => {
+      overlay.style.opacity = on ? '1' : '0';
+      document.documentElement.classList.toggle('is-screen-blurred', on);
+    }, on ? BLUR_ON_MS : BLUR_OFF_MS);
+  };
+
+  // Потеря фокуса/видимости — включаем
+  window.addEventListener('blur', () => setBlur(true));
+  document.addEventListener('visibilitychange', () => {
+    setBlur(document.hidden);
+  });
+
+  // Возврат фокуса — выключаем
+  window.addEventListener('focus', () => setBlur(false));
+
+  // На мобильных иногда срабатывает при сворачивании
+  window.addEventListener('pageshow', () => setBlur(false));
+  window.addEventListener('pagehide', () => setBlur(true));
+
+  // На старте — вдруг вкладка уже не активна
+  setBlur(document.hidden || !document.hasFocus());
+})();
