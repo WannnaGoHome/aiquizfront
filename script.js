@@ -27,12 +27,12 @@ const I18N = {
     waiting: {
       title: "Ожидаем начала игры",
       nickname_label: "Ваш никнейм:",
-      wait_text: "Как только админ запустит игру, здесь появится первый вопрос. Оставайтесь на связи!"
+      wait_text: "Как только админ запустит игру, здесь появится первый вопрос. Оставайтесь на связи! Если игра не началась, обновите страницу"
     },
     waiting_results: {
       title: "Ожидаем…",
       nickname_label: "Ваш никнейм:",
-      text: "Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа!"
+      text: "Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа! Если игра зависла, обновите страницу"
     },
     common: {
       logout: "Поменять язык"
@@ -78,12 +78,12 @@ const I18N = {
     waiting: {
       title: "Waiting to start",
       nickname_label: "Your nickname:",
-      wait_text: "As soon as the admin starts the game, the first question will appear here. Stay tuned!"
+      wait_text: "As soon as the admin starts the game, the first question will appear here. Stay tuned! If the game hasn't started, refresh the page."
     },
     waiting_results: {
       title: "Waiting…",
       nickname_label: "Your nickname:",
-      text: "When the game ends, we'll count the points and announce the stage results!"
+      text: "When the game ends, we'll count the points and announce the stage results! If the game freezes, refresh the page."
     },
     common: {
       logout: "Change the language"
@@ -128,13 +128,13 @@ const I18N = {
     },
     waiting: {
       title: "Ойынның басталуын күтіңіз",
-      nickname_label: "Сіздің лақап атыңыз:",
-      wait_text: "Админ ойынды іске қосқан сәтте, мұнда бірінші сұрақ шығады. Байланыста болыңыз!"
+      nickname_label: "Сіздің никнейміңіз:",
+      wait_text: "Админ ойынды іске қосқан сәтте, мұнда бірінші сұрақ шығады. Байланыста болыңыз! Ойын басталмаса, бетті жаңартыңыз."
     },
     waiting_results: {
       title: "Күтеміз…",
-      nickname_label: "Сіздің лақап атыңыз:",
-      text: "Ойын аяқталған бойда ұпайлар есептеліп, осы кезеңнің нәтижелері жарияланады!"
+      nickname_label: "Сіздің никнейміңіз:",
+      text: "Ойын аяқталған бойда ұпайлар есептеліп, осы кезеңнің нәтижелері жарияланады! Ойын қатып қалса, бетті жаңартыңыз."
     },
     common: {
       logout: "Тілді өзгерту"
@@ -160,7 +160,7 @@ const I18N = {
       title: "Құттықтаймыз!",
       text: "Сіздің жауаптарыңыз ең үздіктердің қатарында болды! Сіз жеңімпаздар қатарына кірдіңіз!",
       prize_title: "Сіздің жүлдеңіз:",
-      prize_text: "Өзіңізге лайық жүлдені алу үшін <strong id=\"winner-nickname\"></strong> бірінші қабаттағы ұйымдастырушылардың тіркеу үстеліне барып, лақап атыңызды айтыңыз.",
+      prize_text: "Өзіңізге лайық жүлдені алу үшін <strong id=\"winner-nickname\"></strong> бірінші қабаттағы ұйымдастырушылардың тіркеу үстеліне барып, никнейміңіз айтыңыз.",
       thanks_again: "Қатысқаныңыз үшін тағы да рақмет!"
     }
   },
@@ -616,6 +616,13 @@ async function handleOptionClick(index) {
     selectedBtn.classList.add("incorrect");
   }
 
+  if (res?.isCompleted) {
+    console.log("🎬 Викторина завершена сервером");
+    await playEndQuizVideo();
+    finishGamePhase();
+    return;
+  }
+
   setTimeout(() => {
     questionIndex++;
     nextQuestion();
@@ -632,7 +639,7 @@ function qsa(sel) {
 
 const askedQuestionIds = new Set();
 
-function nextQuestion() {
+function nextQuestion() async {
   while (questionIndex < questions.length && askedQuestionIds.has(questions[questionIndex]?.id)) {
     questionIndex++;
   }
@@ -677,6 +684,14 @@ function nextQuestion() {
       nextQuestion();
     }
   }, 1000);
+
+  if (res?.isCompleted) {
+    console.log("🎬 Викторина завершена сервером");
+    await playEndQuizVideo();
+    finishGamePhase();
+    return;
+  }
+
 
   // Определяем тип вопроса и показываем соответствующий экран
   if (q.type === "image") {
@@ -766,6 +781,14 @@ async function handleImageOptionClick(index) {
     selectedBtn.classList.remove("selected");
     selectedBtn.classList.add("incorrect");
   }
+
+  if (res?.isCompleted) {
+    console.log("🎬 Викторина завершена сервером");
+    await playEndQuizVideo();
+    finishGamePhase();
+    return;
+  }
+
 
   setTimeout(() => {
     questionIndex++;
@@ -942,6 +965,57 @@ function playCountdownVideoOncePerQuiz(quizId) {
     });
   });
 }
+
+async function playEndQuizVideo() {
+  return new Promise((resolve) => {
+    const overlayId = "endquiz-overlay";
+    let overlay = document.getElementById(overlayId);
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = overlayId;
+      overlay.style.position = "fixed";
+      overlay.style.inset = "0";
+      overlay.style.zIndex = "9999";
+      overlay.style.background = "#000";
+      overlay.style.display = "flex";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      document.body.appendChild(overlay);
+    }
+
+    let video = overlay.querySelector("video");
+    if (!video) {
+      video = document.createElement("video");
+      video.src = "./sfx/endquiz.mp4";
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = false;
+      video.style.width = "100vw";
+      video.style.height = "100vh";
+      video.style.objectFit = "cover";
+      overlay.appendChild(video);
+    }
+
+    // Останавливаем фон
+    const wasBgPlaying = !SFX.bg?.paused;
+    stopBg();
+
+    overlay.classList.remove("hidden");
+
+    const onFinish = () => {
+      video.removeEventListener("ended", onFinish);
+      video.removeEventListener("error", onFinish);
+      overlay.classList.add("hidden");
+      if (wasBgPlaying) startBg(0.18);
+      resolve(true);
+    };
+
+    video.addEventListener("ended", onFinish);
+    video.addEventListener("error", onFinish);
+    video.play().catch(() => onFinish());
+  });
+}
+
 
 // ===== Anti-screenshot blur =====
 (function setupAntiScreenshot() {
