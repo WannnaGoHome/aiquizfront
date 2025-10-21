@@ -32,7 +32,7 @@ const I18N = {
     waiting_results: {
       title: "Ожидаем…",
       nickname_label: "Ваш никнейм:",
-      text: "Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа! Если игра зависла, обновите страницу"
+      text: "Как только игра завершится, произойдёт подсчёт очков. Новая игра начнётся на следующем брейке. Если игра зависла, обновите страницу"
     },
     common: {
       logout: "Поменять язык"
@@ -83,7 +83,7 @@ const I18N = {
     waiting_results: {
       title: "Waiting…",
       nickname_label: "Your nickname:",
-      text: "When the game ends, we'll count the points and announce the stage results! If the game freezes, refresh the page."
+      text: "When the game ends, we'll count the points! A new game starts on the next break. If the game freezes, refresh the page."
     },
     common: {
       logout: "Change the language"
@@ -134,7 +134,7 @@ const I18N = {
     waiting_results: {
       title: "Күтеміз…",
       nickname_label: "Сіздің никнейміңіз:",
-      text: "Ойын аяқталған бойда ұпайлар есептеліп, осы кезеңнің нәтижелері жарияланады! Ойын қатып қалса, бетті жаңартыңыз."
+      text: "Ойын аяқталған бойда ұпайлар есептеледі! Келесі үзілісте жаңа ойын басталады. Ойын қатып қалса, бетті жаңартыңыз."
     },
     common: {
       logout: "Тілді өзгерту"
