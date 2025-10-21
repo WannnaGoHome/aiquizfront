@@ -718,10 +718,11 @@ function nextQuestion() {
   }, 1000);
 
   // Выбор экрана по типу вопроса
-  if (q.type === "image") {
-    showState("game-image");
-    renderImageQuestion(q);
-  } else if (q.type === "single") {
+  if (q.type === "single") {
+    if (images_urls){
+      showState("game-image");
+      renderImageQuestion(q);
+    }
     showState("game");
     qTextEl.textContent = qText(q, currentLang);
     renderOptions(qOptions(q, currentLang));
@@ -766,7 +767,7 @@ function renderImageQuestion(q) {
   optionsContainer.innerHTML = "";
 
   // Устанавливаем картинку (можно оставить фиксированной или брать из вопроса)
-  collageImage.src = "./picture.jpg";
+  collageImage.src = q.images_urls?.[0] ? `${API_BASE_URL}${q.images_urls[0]}` : "./picture.jpg";
   collageImage.alt = "Варианты картинок A, B, C, D";
 
   // Рендерим варианты ответов
