@@ -639,7 +639,7 @@ function qsa(sel) {
 
 const askedQuestionIds = new Set();
 
-function nextQuestion() async {
+function nextQuestion() {
   while (questionIndex < questions.length && askedQuestionIds.has(questions[questionIndex]?.id)) {
     questionIndex++;
   }
@@ -664,14 +664,8 @@ function nextQuestion() async {
   totEl.textContent = String(questions.length);
   updateQuestionProgressLabel();
 
-   let timer = q?.duration_seconds || 25;
-  
-  const fmt = s => {
-    const minutes = Math.floor(s / 60);
-    const seconds = s % 60;
-    return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-  };
-  
+  let timer = q?.duration_seconds || 25;
+  const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
   timerEl.textContent = fmt(timer);
 
   if (intervalId) clearInterval(intervalId);
@@ -685,15 +679,7 @@ function nextQuestion() async {
     }
   }, 1000);
 
-  if (res?.isCompleted) {
-    console.log("🎬 Викторина завершена сервером");
-    await playEndQuizVideo();
-    finishGamePhase();
-    return;
-  }
-
-
-  // Определяем тип вопроса и показываем соответствующий экран
+  // Выбор экрана по типу вопроса
   if (q.type === "image") {
     showState("game-image");
     renderImageQuestion(q);
@@ -710,9 +696,20 @@ function nextQuestion() async {
       textarea.setAttribute('placeholder', t('game.answer_ph'));
       submitBtn.textContent = t('game.submit');
       submitBtn.disabled = false;
+
+      // ⬇️ ВАЖНО: проверяем isCompleted ПОСЛЕ отправки
       submitBtn.onclick = async () => {
         submitBtn.disabled = true;
-        await ApiClient.sendAnswer(telegramId, q.id, q.quiz_id, [textarea.value], currentLang);
+        const res = await ApiClient.sendAnswer(
+          telegramId, q.id, q.quiz_id, [textarea.value], currentLang
+        );
+
+        if (res?.isCompleted) {
+          await playEndQuizVideo();
+          finishGamePhase();
+          return;
+        }
+
         setTimeout(() => { questionIndex++; nextQuestion(); }, 1000);
       };
     }
