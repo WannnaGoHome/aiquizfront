@@ -719,7 +719,7 @@ function nextQuestion() {
 
   // Выбор экрана по типу вопроса
   if (q.type === "single") {
-    if (images_urls){
+    if (q.images_urls){
       showState("game-image");
       renderImageQuestion(q);
     }
