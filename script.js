@@ -395,8 +395,13 @@ function shuffle(input) {
   return a;
 }
 
+let finishing = false;
+
 async function finishGamePhase() {
+  if (finishing) return;
+  finishing = true;
   try {
+    stopPolling();         
     const event_id = await getActiveEventId(telegramId);
     let phase = await ApiClient.getEventStatus(event_id, telegramId);
 
@@ -422,6 +427,8 @@ async function finishGamePhase() {
     console.error("Ошибка завершения фазы:", e);
     const adminEl = document.getElementById("admin-notification");
     if (adminEl) adminEl.textContent = "Ошибка завершения фазы: " + e.message;
+  } finally {
+    finishing = false;
   }
 }
 
@@ -594,39 +601,70 @@ async function handleOptionClick(index) {
     btn.classList.add("disabled");
     btn.style.pointerEvents = "none";
   });
-  selectedBtn.classList.add("selected");
+  selectedBtn?.classList.add("selected");
 
+  let res; // 👈 вынесли наверх
   try {
-    const res = await ApiClient.sendAnswer(
-      telegramId,
-      q.id,
-      q.quiz_id ?? 1,
-      [chosen],
-      currentLang
-    );
+    res = await ApiClient.sendAnswer(telegramId, q.id, q.quiz_id ?? 1, [chosen], currentLang);
     console.log("✅ Ответ отправлен:", res);
-    const isCorrect = !!(res?.awarded_points!=0)
 
-    selectedBtn.classList.remove("selected");
-    selectedBtn.classList.add(isCorrect? "correct" : "incorrect");
-    playSfx(isCorrect ? 'correct' : 'wrong', isCorrect ? 1 : 0.9);
+    const isCorrect = !!(res?.awarded_points != 0);
+    selectedBtn?.classList.remove("selected");
+    selectedBtn?.classList.add(isCorrect ? "correct" : "incorrect");
+    playSfx(isCorrect ? "correct" : "wrong", isCorrect ? 1 : 0.9);
+
+    // ✅ проверяем завершение ВНУТРИ try
+    if (res?.isCompleted) {
+      console.log("🎬 Викторина завершена сервером");
+      await playEndQuizVideo();
+      finishGamePhase();
+      return;
+    }
+
   } catch (err) {
     console.error("Ошибка при отправке:", err);
-    selectedBtn.classList.remove("selected");
-    selectedBtn.classList.add("incorrect");
+    selectedBtn?.classList.remove("selected");
+    selectedBtn?.classList.add("incorrect");
   }
 
-  if (res?.isCompleted) {
-    console.log("🎬 Викторина завершена сервером");
-    await playEndQuizVideo();
-    finishGamePhase();
-    return;
+  setTimeout(() => { questionIndex++; nextQuestion(); }, 1500);
+}
+
+async function handleImageOptionClick(index) {
+  const q = questions[questionIndex];
+  const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
+
+  document.querySelectorAll(".answer-option").forEach(btn => {
+    btn.classList.add("disabled");
+    btn.style.pointerEvents = "none";
+  });
+  selectedBtn?.classList.add("selected");
+
+  let res;
+  try {
+    const chosenOption = qOptions(q)[index];
+    res = await ApiClient.sendAnswer(telegramId, q.id, q.quiz_id ?? 1, [chosenOption], currentLang);
+    console.log("✅ Ответ отправлен:", res);
+
+    const isCorrect = !!(res?.awarded_points != 0);
+    selectedBtn?.classList.remove("selected");
+    selectedBtn?.classList.add(isCorrect ? "correct" : "incorrect");
+    playSfx(isCorrect ? 'correct' : 'wrong', isCorrect ? 1 : 0.9);
+
+    if (res?.isCompleted) {
+      console.log("🎬 Викторина завершена сервером");
+      await playEndQuizVideo();
+      finishGamePhase();
+      return;
+    }
+
+  } catch (err) {
+    console.error("Ошибка при отправке:", err);
+    selectedBtn?.classList.remove("selected");
+    selectedBtn?.classList.add("incorrect");
   }
 
-  setTimeout(() => {
-    questionIndex++;
-    nextQuestion();
-  }, 1500);
+  setTimeout(() => { questionIndex++; nextQuestion(); }, 1500);
 }
 
 function qs(id) {
@@ -741,56 +779,6 @@ function renderImageQuestion(q) {
     btn.onclick = () => handleImageOptionClick(i);
     optionsContainer.appendChild(btn);
   });
-}
-
-// Обработчик клика для вопросов с одной картинкой
-async function handleImageOptionClick(index) {
-  const q = questions[questionIndex];
-  const selectedBtn = document.querySelector(`.answer-option[data-index="${index}"]`);
-
-  // Блокируем все варианты
-  document.querySelectorAll(".answer-option").forEach(btn => {
-    btn.classList.add("disabled");
-    btn.style.pointerEvents = "none";
-  });
-
-  selectedBtn.classList.add("selected");
-
-  try {
-    const chosenOption = qOptions(q)[index];
-    const res = await ApiClient.sendAnswer(
-      telegramId,
-      q.id,
-      q.quiz_id ?? 1,
-      [chosenOption],
-      currentLang
-    );
-    
-    console.log("✅ Ответ отправлен:", res);
-    const isCorrect = !!(res?.awarded_points != 0);
-
-    selectedBtn.classList.remove("selected");
-    selectedBtn.classList.add(isCorrect ? "correct" : "incorrect");
-    
-    playSfx(isCorrect ? 'correct' : 'wrong', isCorrect ? 1 : 0.9);
-  } catch (err) {
-    console.error("Ошибка при отправке:", err);
-    selectedBtn.classList.remove("selected");
-    selectedBtn.classList.add("incorrect");
-  }
-
-  if (res?.isCompleted) {
-    console.log("🎬 Викторина завершена сервером");
-    await playEndQuizVideo();
-    finishGamePhase();
-    return;
-  }
-
-
-  setTimeout(() => {
-    questionIndex++;
-    nextQuestion();
-  }, 1500);
 }
 
 // Показываем выбор языка без разлогина
@@ -996,19 +984,22 @@ async function playEndQuizVideo() {
     // Останавливаем фон
     const wasBgPlaying = !SFX.bg?.paused;
     stopBg();
-
     overlay.classList.remove("hidden");
 
-    const onFinish = () => {
-      video.removeEventListener("ended", onFinish);
-      video.removeEventListener("error", onFinish);
+    const cleanup = () => {
       overlay.classList.add("hidden");
       if (wasBgPlaying) startBg(0.18);
       resolve(true);
     };
 
+    const onFinish = () => {
+      video.removeEventListener("ended", onFinish);
+      video.removeEventListener("error", onFinish);
+      cleanup();
+    };
+
     video.addEventListener("ended", onFinish);
-    video.addEventListener("error", onFinish);
+    video.addEventListener("error", cleanup);
     video.play().catch(() => onFinish());
   });
 }
