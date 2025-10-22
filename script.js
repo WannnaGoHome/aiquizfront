@@ -526,87 +526,6 @@ async function checkAndStartGame() {
   }
 }
 
-function nextQuestion() {
-  while (questionIndex < questions.length && askedQuestionIds.has(questions[questionIndex]?.id)) {
-    questionIndex++;
-  }
-
-  if (questionIndex >= questions.length) {
-    if (gameTimer) clearTimeout(gameTimer);
-    if (intervalId) clearInterval(intervalId);
-    finishGamePhase();
-    return;
-  }
-
-  const q = questions[questionIndex];
-  if (q?.id != null) askedQuestionIds.add(q.id);
-
-  const qTextEl = qs("question-text");
-  const curEl   = qs("current-q");
-  const totEl   = qs("total-qs");
-  const timerEl = qs("question-timer");
-  if (!qTextEl || !curEl || !totEl || !timerEl) return;
-
-  curEl.textContent = String(questionIndex + 1);
-  totEl.textContent = String(questions.length);
-  updateQuestionProgressLabel();
-
-  let timer = q?.duration_seconds || 25;
-  const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-  timerEl.textContent = fmt(timer);
-
-  if (intervalId) clearInterval(intervalId);
-  intervalId = setInterval(() => {
-    timer--;
-    timerEl.textContent = fmt(timer);
-    if (timer <= 0) {
-      clearInterval(intervalId);
-      questionIndex++;
-      nextQuestion();
-    }
-  }, 1000);
-
-  // --- ВЫБОР ЭКРАНА ---
-  const hasImages = Array.isArray(q.images_urls) && q.images_urls.length > 0;
-
-  if (q.type === "single") {
-    if (hasImages) {
-      showState("game-image");
-      // текст в заголовке для image-вопросов тоже нужен:
-      qTextEl.textContent = qText(q);
-      renderImageQuestion(q);
-    } else {
-      showState("game");
-      qTextEl.textContent = qText(q);
-      renderOptions(qOptions(q));
-    }
-  } else {
-    showState("game-open");
-    qTextEl.textContent = qText(q);
-    const textarea = qs("answer-textarea");
-    const submitBtn = qs("submit-answer-btn");
-    if (textarea && submitBtn) {
-      textarea.setAttribute('placeholder', t('game.answer_ph'));
-      submitBtn.textContent = t('game.submit');
-      submitBtn.disabled = false;
-
-      submitBtn.onclick = async () => {
-        submitBtn.disabled = true;
-        const res = await ApiClient.sendAnswer(
-          telegramId, q.id, q.quiz_id, [textarea.value], currentLang
-        );
-
-        if (res?.isCompleted) {
-          await playEndQuizVideo();
-          finishGamePhase();
-          return;
-        }
-
-        setTimeout(() => { questionIndex++; nextQuestion(); }, 1000);
-      };
-    }
-  }
-}
 
 
 function qOptions(q) {
@@ -620,6 +539,14 @@ function qOptions(q) {
   if (i18n && Array.isArray(i18n.en))   return i18n.en;
 
   return [];
+}
+
+function qText(q) {
+  const pref = appState.lang || 'ru';
+  // поддержка обоих форматов: text_i18n.{ru|en|kk} ИЛИ text:{ru|en|kk} ИЛИ просто text: "..."
+  const i18n = q?.text_i18n || q?.text;
+  if (typeof i18n === 'string') return i18n;
+  return i18n?.[pref] ?? i18n?.ru ?? i18n?.en ?? '';
 }
 
 
@@ -799,18 +726,21 @@ function nextQuestion() {
     }
   }, 1000);
 
-  // Выбор экрана по типу вопроса
+  const hasImages = Array.isArray(q.images_urls) && q.images_urls.length > 0;
+
   if (q.type === "single") {
-    if (q.images_urls){
+    if (hasImages) {
       showState("game-image");
+      qTextEl.textContent = qText(q);
       renderImageQuestion(q);
+    } else {
+      showState("game");
+      qTextEl.textContent = qText(q);
+      renderOptions(qOptions(q));
     }
-    showState("game");
-    qTextEl.textContent = qText(q, currentLang);
-    renderOptions(qOptions(q, currentLang));
   } else {
     showState("game-open");
-    qTextEl.textContent = qText(q, currentLang);
+    qTextEl.textContent = qText(q);
     const textarea = qs("answer-textarea");
     const submitBtn = qs("submit-answer-btn");
     if (textarea && submitBtn) {
@@ -818,24 +748,20 @@ function nextQuestion() {
       submitBtn.textContent = t('game.submit');
       submitBtn.disabled = false;
 
-      // ⬇️ ВАЖНО: проверяем isCompleted ПОСЛЕ отправки
       submitBtn.onclick = async () => {
         submitBtn.disabled = true;
-        const res = await ApiClient.sendAnswer(
-          telegramId, q.id, q.quiz_id, [textarea.value], currentLang
-        );
-
+        const res = await ApiClient.sendAnswer(telegramId, q.id, q.quiz_id, [textarea.value], currentLang);
         if (res?.isCompleted) {
           await playEndQuizVideo();
           finishGamePhase();
           return;
         }
-
         setTimeout(() => { questionIndex++; nextQuestion(); }, 1000);
       };
     }
   }
 }
+
 
 // Функция для рендеринга вопроса с одной картинкой
 // Если нет — раскомментируйте и укажите свой бэкенд
