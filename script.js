@@ -837,6 +837,12 @@ function nextQuestion() {
   }
 }
 
+// Функция для рендеринга вопроса с одной картинкой
+// Если нет — раскомментируйте и укажите свой бэкенд
+// const API_BASE_URL = "https://<ваш-бэкенд>";
+
+const API_BASE_URL = "https://ai-bot-backend-ghm4.onrender.com";
+
 function renderImageQuestion(q) {
   const container = document.querySelector('.single-image-container');
   const optionsContainer = qs("options");
