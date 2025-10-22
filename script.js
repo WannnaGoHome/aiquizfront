@@ -526,20 +526,102 @@ async function checkAndStartGame() {
   }
 }
 
-function qText(q) {
-  const pref = appState.lang || 'ru';
-  const i18n = q?.text_i18n || {};
-  return i18n[pref] ?? i18n.ru ?? i18n.en ?? q?.text ?? "";
+function nextQuestion() {
+  while (questionIndex < questions.length && askedQuestionIds.has(questions[questionIndex]?.id)) {
+    questionIndex++;
+  }
+
+  if (questionIndex >= questions.length) {
+    if (gameTimer) clearTimeout(gameTimer);
+    if (intervalId) clearInterval(intervalId);
+    finishGamePhase();
+    return;
+  }
+
+  const q = questions[questionIndex];
+  if (q?.id != null) askedQuestionIds.add(q.id);
+
+  const qTextEl = qs("question-text");
+  const curEl   = qs("current-q");
+  const totEl   = qs("total-qs");
+  const timerEl = qs("question-timer");
+  if (!qTextEl || !curEl || !totEl || !timerEl) return;
+
+  curEl.textContent = String(questionIndex + 1);
+  totEl.textContent = String(questions.length);
+  updateQuestionProgressLabel();
+
+  let timer = q?.duration_seconds || 25;
+  const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  timerEl.textContent = fmt(timer);
+
+  if (intervalId) clearInterval(intervalId);
+  intervalId = setInterval(() => {
+    timer--;
+    timerEl.textContent = fmt(timer);
+    if (timer <= 0) {
+      clearInterval(intervalId);
+      questionIndex++;
+      nextQuestion();
+    }
+  }, 1000);
+
+  // --- ВЫБОР ЭКРАНА ---
+  const hasImages = Array.isArray(q.images_urls) && q.images_urls.length > 0;
+
+  if (q.type === "single") {
+    if (hasImages) {
+      showState("game-image");
+      // текст в заголовке для image-вопросов тоже нужен:
+      qTextEl.textContent = qText(q);
+      renderImageQuestion(q);
+    } else {
+      showState("game");
+      qTextEl.textContent = qText(q);
+      renderOptions(qOptions(q));
+    }
+  } else {
+    showState("game-open");
+    qTextEl.textContent = qText(q);
+    const textarea = qs("answer-textarea");
+    const submitBtn = qs("submit-answer-btn");
+    if (textarea && submitBtn) {
+      textarea.setAttribute('placeholder', t('game.answer_ph'));
+      submitBtn.textContent = t('game.submit');
+      submitBtn.disabled = false;
+
+      submitBtn.onclick = async () => {
+        submitBtn.disabled = true;
+        const res = await ApiClient.sendAnswer(
+          telegramId, q.id, q.quiz_id, [textarea.value], currentLang
+        );
+
+        if (res?.isCompleted) {
+          await playEndQuizVideo();
+          finishGamePhase();
+          return;
+        }
+
+        setTimeout(() => { questionIndex++; nextQuestion(); }, 1000);
+      };
+    }
+  }
 }
+
 
 function qOptions(q) {
   const pref = appState.lang || 'ru';
-  const i18n = q?.options_i18n || {};
-  if (Array.isArray(i18n[pref])) return i18n[pref];
-  if (Array.isArray(i18n.ru))   return i18n.ru;
-  if (Array.isArray(i18n.en))   return i18n.en;
-  return Array.isArray(q?.options) ? q.options : [];
+  // поддержка обоих форматов: options_i18n.{ru|en|kk} ИЛИ options.{ru|en|kk} ИЛИ options:[]
+  const i18n = q?.options_i18n || q?.options;
+
+  if (Array.isArray(i18n)) return i18n;                // уже массив
+  if (i18n && Array.isArray(i18n[pref])) return i18n[pref];
+  if (i18n && Array.isArray(i18n.ru))   return i18n.ru;
+  if (i18n && Array.isArray(i18n.en))   return i18n.en;
+
+  return [];
 }
+
 
 function qCorrect(q) { return []; }
 
@@ -755,23 +837,30 @@ function nextQuestion() {
   }
 }
 
-// Функция для рендеринга вопроса с одной картинкой
 function renderImageQuestion(q) {
-  const singleImageContainer = document.querySelector('.single-image-container');
-  const collageImage = document.querySelector('.collage-image');
+  const container = document.querySelector('.single-image-container');
   const optionsContainer = qs("options");
-  
-  if (!singleImageContainer || !collageImage || !optionsContainer) return;
+  if (!container || !optionsContainer) return;
 
-  // Очищаем варианты ответов
+  // очищаем содержимое
+  container.innerHTML = "";
   optionsContainer.innerHTML = "";
 
-  // Устанавливаем картинку (можно оставить фиксированной или брать из вопроса)
-  collageImage.src = q.images_urls?.[0] ? `${API_BASE_URL}${q.images_urls[0]}` : "./picture.jpg";
-  collageImage.alt = "Варианты картинок A, B, C, D";
+  // достаем первую картинку из массива
+  const imageUrl = Array.isArray(q.images_urls) && q.images_urls.length > 0
+    ? q.images_urls[0]
+    : null;
 
-  // Рендерим варианты ответов
-  const options = qOptions(q, currentLang);
+  if (imageUrl) {
+    const img = document.createElement("img");
+    img.src = imageUrl.startsWith("http") ? imageUrl : `${API_BASE_URL}${imageUrl}`;
+    img.className = "collage-image";
+    img.alt = "Изображение к вопросу";
+    container.appendChild(img);
+  }
+
+  // рендерим варианты ответов
+  const options = qOptions(q);
   options.forEach((opt, i) => {
     const btn = document.createElement("div");
     btn.className = "answer-option";
@@ -781,7 +870,6 @@ function renderImageQuestion(q) {
     optionsContainer.appendChild(btn);
   });
 }
-
 // Показываем выбор языка без разлогина
 function showLanguagePicker() {
   stopPolling();
