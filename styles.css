@@ -1,6 +1,4 @@
-/* ===== БАЗОВЫЕ СТИЛИ И ПЕРЕМЕННЫЕ ===== */
 :root {
-  /* Основные цвета Telegram темы */
   --tg-bg-color: var(--tg-theme-bg-color, #ffffff);
   --tg-text-color: var(--tg-theme-text-color, #1a237e);
   --tg-button-color: var(--tg-theme-button-color, #1976d2);
@@ -9,28 +7,21 @@
   --tg-hint-color: var(--tg-theme-hint-color, #546e7a);
   --tg-border-color: var(--tg-theme-section-border-color, #cfd8dc);
 
-  /* Градиенты и акценты */
   --accent-gradient: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
   --light-gradient: linear-gradient(135deg, #bbdefb 0%, #64b5f6 100%);
   --dark-gradient: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
 
-  /* Статусы */
   --success-color: #2e7d32;
   --warning-color: #f57c00;
   --error-color: #d32f2f;
   --info-color: #0288d1;
-
-  /* Стеклянность */
   --glass-bg: rgba(255, 255, 255, 0.25);
   --glass-border: rgba(33, 150, 243, 0.2);
-
-  /* Тени */
   --shadow-sm: 0 2px 12px rgba(21, 101, 192, 0.08);
   --shadow-md: 0 4px 20px rgba(21, 101, 192, 0.12);
   --shadow-lg: 0 8px 30px rgba(21, 101, 192, 0.16);
 }
 
-/* ==== ТЕМЫ ЧЕРЕЗ html[data-theme] ==== */
 html[data-theme="light"] body {
   background-image: url("./app_background.jpg") !important;
   background-size: cover;
@@ -58,7 +49,6 @@ html[data-theme="dark"] {
   --panel-text: #e3f2fd;                     
 }
 
-/* ==== СБРОС/БАЗА ==== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -70,8 +60,6 @@ body {
 }
 
 .app-container { min-height: 100vh; }
-
-/* ===== КОНТЕЙНЕРЫ И СЕТКА ===== */
 .container { max-width: 100%; padding: 20px; margin: 0 auto; }
 
 .state {
@@ -85,7 +73,6 @@ body {
 }
 .state.hidden { display: none; }
 
-/* ===== ТИПОГРАФИКА ===== */
 h1 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -100,7 +87,6 @@ h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: 1rem; color: #1565c0; }
 h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #1565c0; }
 p  { margin-bottom: 1rem; color: var(--tg-hint-color); line-height: 1.5; }
 
-/* ===== КАРТОЧКИ ===== */
 .card {
   background: var(--tg-secondary-bg);
   border-radius: 20px;
@@ -122,7 +108,6 @@ p  { margin-bottom: 1rem; color: var(--tg-hint-color); line-height: 1.5; }
   box-shadow: var(--shadow-sm);
 }
 
-/* ===== ФОРМЫ ===== */
 .form-group { margin-bottom: 1.5rem; }
 
 input, textarea {
@@ -145,7 +130,6 @@ input:focus, textarea:focus {
 input::placeholder, textarea::placeholder { color: #90a4ae; }
 textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 
-/* ===== КНОПКИ ===== */
 .btn {
   display: inline-block;
   padding: 16px 32px;
@@ -173,7 +157,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 .btn:active { transform: translateY(0); }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-/* ===== ИКОНКИ ===== */
 .icon {
   font-size: 3.5rem;
   text-align: center;
@@ -185,7 +168,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
   filter: drop-shadow(0 4px 8px rgba(21, 101, 192, 0.2));
 }
 
-/* ===== ТАЙМЕР/ХЕДЕР ВОПРОСА ===== */
 .question-header {
   display: flex;
   flex-direction: column;       
@@ -230,7 +212,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
 
-/* ===== ЗАГРУЗЧИК ===== */
 .loader {
   width: 50px; height: 50px;
   border: 3px solid var(--tg-border-color);
@@ -241,7 +222,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 }
 @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
 
-/* ===== УВЕДОМЛЕНИЯ ===== */
 .notification {
   padding: 16px;
   border-radius: 12px;
@@ -256,7 +236,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 .error   { background: rgba(244,67,54,.1); border: 1px solid rgba(244,67,54,.2); color: var(--error-color); }
 .warning { background: rgba(255,152,0,.1); border: 1px solid rgba(255,152,0,.2); color: var(--warning-color); }
 
-/* ===== КАРТОЧКА ВОПРОСА/ОТВЕТА ===== */
 .question-card.panel,
 .answer-block.panel {
   background: var(--panel-bg);
@@ -264,7 +243,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 }
 .question-card h2 { font-weight: 600; color: var(--panel-text); }
 
-/* ===== БЛОК ОТВЕТА ===== */
 .answer-section {
   background: var(--tg-secondary-bg);
   border-radius: 20px;
@@ -273,7 +251,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 }
 .answer-actions { display: flex; gap: 12px; margin-top: 1rem; }
 
-/* ===== ЭКРАН ПОБЕДИТЕЛЯ ===== */
 .winner-card { background: var(--dark-gradient); color: white; border-radius: 24px; padding: 32px; text-align: center; box-shadow: var(--shadow-lg); margin: 2rem 0; }
 .winner-card h2 { color: white; margin-bottom: 1rem; }
 
@@ -285,12 +262,10 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* ===== ПРОГРЕСС-БАР ===== */
 .progress-container { width: 100%; margin: 1rem 0 2rem 0; }
 .progress-bar { width: 100%; height: 8px; background: var(--tg-secondary-bg); border-radius: 4px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--accent-gradient); border-radius: 4px; transition: width 0.3s ease; width: 0%; }
 
-/* ===== ВАРИАНТЫ ОТВЕТОВ ===== */
 .answers-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 2rem 0; }
 .answer-option {
   padding: 16px 20px;
@@ -306,7 +281,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 .answer-option.correct  { background: var(--success-color); color: white; border-color: var(--success-color); }
 .answer-option.incorrect{ background: var(--error-color);   color: white; border-color: var(--error-color); opacity: .7; }
 
-/* ===== РЕЗУЛЬТАТЫ ===== */
 .results-card {
   background: var(--tg-secondary-bg);
   border: 1px solid var(--tg-border-color);
@@ -316,7 +290,6 @@ textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 .results-card h3 { margin-bottom: 1rem; color: var(--tg-text-color); }
 .results-card p  { margin: 0.5rem 0; font-size: 1.1rem; }
 
-/* ===== КНОПКИ (универсальные) ===== */
 button {
   display: inline-block; padding: 16px 32px; border: none; border-radius: 16px;
   font-size: 16px; font-weight: 600; text-align: center;
@@ -336,7 +309,6 @@ button:hover:before { left: 100%; }
 #submit-answer-btn { margin-top: 1rem; }
 form button { margin-top: 1.5rem; }
 
-/* ===== УВЕДОМЛЕНИЯ (вариант 2) ===== */
 .notification {
   display: flex; align-items: center; gap: 12px;
   padding: 16px; border-radius: 16px; margin: 1rem 0;
@@ -356,7 +328,6 @@ form button { margin-top: 1.5rem; }
 #submit-answer-btn { transition: all 0.3s ease; }
 #between-timer { display: inline-block; font-size: 1.5rem; font-weight: bold; color: var(--tg-button-color); transition: transform 0.2s ease; }
 
-/* ===== КНОПКА ВЫХОДА ===== */
 .btn-outline {
   background: transparent !important;
   border: 2px solid #42a5f5 !important;
@@ -371,19 +342,16 @@ form button { margin-top: 1.5rem; }
   background: rgba(211,47,47,0.1); color: #d32f2f; border: 1px solid var(--error-color);
 }
 .exit-btn:hover { background: var(--error-color); color: white; }
-/* ===== ЯЗЫКОВЫЕ КНОПКИ ===== */
 .lang-select { margin-top: 1.5rem; text-align: center; }
 .lang-select h3 { font-size: 1rem; color: var(--tg-text-color); margin-bottom: 0.8rem; }
 
-/* контейнер теперь переносит элементы */
 .lang-options {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  flex-wrap: wrap;              /* 👈 разрешаем перенос */
+  flex-wrap: wrap;            
 }
 
-/* карточки тянутся и переносятся по месту */
 .lang-option {
   display: flex; align-items: center; gap: 8px;
   background: var(--tg-secondary-bg);
@@ -391,9 +359,9 @@ form button { margin-top: 1.5rem; }
   border-radius: 12px; padding: 10px 16px; cursor: pointer;
   transition: all 0.3s ease; backdrop-filter: blur(8px); box-shadow: var(--shadow-sm);
 
-  flex: 1 1 180px;              /* 👈 базовая ширина ~180px, можно переносить */
-  max-width: 280px;             /* 👈 не растягивать слишком сильно на широких */
-  min-width: 140px;             /* 👈 и не сжимать слишком сильно */
+  flex: 1 1 180px;           
+  max-width: 280px;         
+  min-width: 140px;      
 }
 
 .lang-option:hover { border-color: var(--tg-button-color); transform: translateY(-2px); }
@@ -405,11 +373,9 @@ form button { margin-top: 1.5rem; }
 }
 .lang-option span { line-height: 20px; }
 
-/* тема тёмная остаётся как была */
 html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.15); }
 .lang-option span { color: var(--tg-text-color); font-weight: 500; user-select: none; }
 
-/* ===== АДАПТИВ ===== */
 @media (max-width: 480px) {
   .container { padding: 16px; }
   h1 { font-size: 1.5rem; }
@@ -418,7 +384,6 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   .answer-actions { flex-direction: column; }
   .btn { padding: 14px 24px; }
 
-  /* На узких экранах — по одному в ряд */
   .lang-options { justify-content: stretch; }
   .lang-option {
     flex: 1 1 100%;
@@ -426,7 +391,6 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   }
 }
 
-/* Совсем узкие устройства (например, 320px) — чуть меньше отступов */
 @media (max-width: 360px) {
   .lang-options { gap: 0.6rem; }
   .lang-option { padding: 8px 12px; }
@@ -455,7 +419,6 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   font-weight: 600;
 }
 
-/* ===== ОДНА КАРТИНКА-КОЛЛАЖ ===== */
 .single-image-container {
   margin: 2rem 0;
   text-align: center;
@@ -474,8 +437,8 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
 #countdown-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;              /* выше всего */
-  background: #000;           /* чёрный фон под видео */
+  z-index: 9999;          
+  background: #000;           
   display: flex;
   align-items: center;
   justify-content: center;
@@ -516,28 +479,24 @@ html[data-theme="dark"] .lang-option { background: rgba(0,0,0,0.3); border-color
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ---- Anti-screenshot overlay ---- */
 #anti-screenshot-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9998;                 /* ниже #countdown-overlay (9999) */
+  z-index: 9998;                 
   pointer-events: none;
-  opacity: 0;                    /* по умолчанию невидим */
+  opacity: 0;                
   transition: opacity .18s ease;
-  /* основной эффект */
   backdrop-filter: blur(30px) saturate(120%);
   background: rgba(255,255,255,0.25); 
   -webkit-backdrop-filter: blur(30px) saturate(120%);
   will-change: backdrop-filter, opacity;
 }
 
-/* Фолбэк на браузеры без backdrop-filter: блюрим контент */
 html.is-screen-blurred .app-container {
   filter: blur(20px) saturate(110%);
-  transform: translateZ(0);      /* убирает артефакты при фильтрах */
+  transform: translateZ(0);      
 }
 
-/* Тёмная тема — чуть темнее поверхность */
 html[data-theme="dark"] #anti-screenshot-overlay {
   background: rgba(0,0,0,0.35);
 }

@@ -10,11 +10,8 @@ const ApiClient = {
         "ngrok-skip-browser-warning": "1"
         },
       });
-
       const contentType = res.headers.get("content-type") || "";
       const text = await res.text();
-
-      // Если сервер вернул HTML (ngrok free, ошибка CORS и т.п.)
       if (!contentType.includes("application/json")) {
         console.error("Non-JSON response from server:", text.substring(0, 200));
         throw new Error("Сервер вернул не JSON (скорее всего ngrok/CORS).");
@@ -158,24 +155,23 @@ const ApiClient = {
   },
 
   listQuestions: async (quizId, locale, include_correct, telegram_id) => {
-  try {
-    const res = await fetch(`${API_BASE}/quizes/${quizId}/questions?locale=${locale}&include_correct=${include_correct}&current_user_telegram_id=${telegram_id}`, {
-      headers: {
-        "Accept": "application/json",
-        "ngrok-skip-browser-warning": "1"
+    try {
+      const res = await fetch(`${API_BASE}/quizes/${quizId}/questions?locale=${locale}&include_correct=${include_correct}&current_user_telegram_id=${telegram_id}`, {
+        headers: {
+          "Accept": "application/json",
+          "ngrok-skip-browser-warning": "1"
+        }
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения вопросов");
       }
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail ? JSON.stringify(err.detail) : "Ошибка получения вопросов");
+      const data = await res.json();
+      return Array.isArray(data) ? data : [data];
+    } catch (e) {
+      console.error("API listQuestions error:", e);
+      throw e;
     }
-    const data = await res.json();
-    // 👇 ВСЕГДА МАССИВ
-    return Array.isArray(data) ? data : [data];
-  } catch (e) {
-    console.error("API listQuestions error:", e);
-    throw e;
-  }
   },
 
   listEvents: async () => {

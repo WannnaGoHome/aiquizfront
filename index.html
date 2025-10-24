@@ -1,349 +1,280 @@
 
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title data-i18n="app.title">🎯 Квиз-игра</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-  <div class="app-container">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title data-i18n="app.title">🎯 Квиз-игра</title>
+        <link rel="stylesheet" href="styles.css"/>
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    </head>
+    <body>
+        <div class="app-container">
 
-    <!-- 1) РЕГИСТРАЦИЯ -->
-    <div id="state-registration" class="state">
-      <div class="container">
-        <h1 data-i18n="app.title">🎯 Квиз-игра</h1>
-        <p data-i18n="registration.subtitle">
-          Зарегистрируйтесь для участия
-        </p>
-
-        <form id="registration-form">
-        <div class="name-fields">
-        <input
-            type="text"
-            id="firstname-input"
-            name="first_name"
-            maxlength="40"
-            required
-            placeholder="Enter First name"
-            data-i18n-placeholder="registration.firstname_ph"
-          />
-
-          <input
-            type="text"
-            id="lastname-input"
-            name="last_name"
-            maxlength="40"
-            required
-            placeholder="Enter Last name"
-            data-i18n-placeholder="registration.lastname_ph"
-          />
-
-          <input
-            type="text"
-            id="nickname-input"
-            name="nickname"
-            maxlength="20"
-            required
-            placeholder="Enter nickname"
-            data-i18n-placeholder="registration.nickname_ph"
-          />
-        </div>
-        <div class="lang-select">
-            <h3 data-i18n="registration.choose_lang">Выберите язык / Select language</h3>
-
-            <div class="lang-options">
-
-            <label class="lang-option">
-                <input type="radio" name="lang" value="kk" id="lang-kk" />
-                <span data-i18n="registration.lang_kk">Қазақ тілі</span>
-            </label>
-
-            <label class="lang-option">
-                <input type="radio" name="lang" value="ru" id="lang-ru" checked />
-                <span data-i18n="registration.lang_ru">Русский</span>
-            </label>
-
-            <label class="lang-option">
-                <input type="radio" name="lang" value="en" id="lang-en" />
-                <span data-i18n="registration.lang_en">English</span>
-            </label>
-
-              
+            <!-- 1) РЕГИСТРАЦИЯ -->
+            <div id="state-registration" class="state">
+            <div class="container">
+                <h1 data-i18n="app.title">🎯 Квиз-игра</h1>
+                <p data-i18n="registration.subtitle"> Зарегистрируйтесь для участия </p>
+                <form id="registration-form">
+                    <div class="name-fields">
+                        <input
+                            type="text"
+                            id="firstname-input"
+                            name="first_name"
+                            maxlength="40"
+                            required
+                            placeholder="Enter First name"
+                            data-i18n-placeholder="registration.firstname_ph" />
+                        <input
+                            type="text"
+                            id="lastname-input"
+                            name="last_name"
+                            maxlength="40"
+                            required
+                            placeholder="Enter Last name"
+                            data-i18n-placeholder="registration.lastname_ph" />
+                        <input
+                            type="text"
+                            id="nickname-input"
+                            name="nickname"
+                            maxlength="20"
+                            required
+                            placeholder="Enter nickname"
+                            data-i18n-placeholder="registration.nickname_ph" />
+                    </div>
+                    <div class="lang-select">
+                        <h3 data-i18n="registration.choose_lang">Выберите язык / Select language</h3>
+                        <div class="lang-options">
+                            <label class="lang-option">
+                                <input type="radio" name="lang" value="kk" id="lang-kk" />
+                                <span data-i18n="registration.lang_kk">Қазақ тілі</span>
+                            </label>
+                            <label class="lang-option">
+                                <input type="radio" name="lang" value="ru" id="lang-ru" checked />
+                                <span data-i18n="registration.lang_ru">Русский</span>
+                            </label>
+                            <label class="lang-option">
+                                <input type="radio" name="lang" value="en" id="lang-en" />
+                                <span data-i18n="registration.lang_en">English</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" id="register-btn" data-i18n="registration.join_btn"> Участвовать! </button>
+                </form>
+                <div id="registration-error" class="hidden error-message"></div>
             </div>
-        </div>
+            </div>
 
-          <button type="submit" id="register-btn" data-i18n="registration.join_btn">
-            Участвовать!
-          </button>
-        </form>
+            <!-- 2) ОЖИДАНИЕ СТАРТА -->
+            <div id="state-waiting" class="state hidden">
+            <div class="container">
+                <div class="icon">⏳</div>
+                <h1 data-i18n="waiting.title">Ожидаем начала игры</h1>
 
-        <div id="registration-error" class="hidden error-message"></div>
-      </div>
-    </div>
+                <p>
+                <span data-i18n="waiting.nickname_label">Ваш никнейм:</span>
+                <strong id="waiting-nickname"></strong>
+                </p>
 
-    <!-- 2) ОЖИДАНИЕ СТАРТА -->
-    <div id="state-waiting" class="state hidden">
-      <div class="container">
-        <div class="icon">⏳</div>
-        <h1 data-i18n="waiting.title">Ожидаем начала игры</h1>
+                <p data-i18n="waiting.wait_text">
+                Как только админ запустит игру, здесь появится первый вопрос. Оставайтесь на связи!
+                </p>
 
-        <p>
-          <span data-i18n="waiting.nickname_label">Ваш никнейм:</span>
-          <strong id="waiting-nickname"></strong>
-        </p>
+                <button
+                onclick="showLanguagePicker()"
+                class="btn btn-outline"
+                style="margin-top: 2rem;"
+                data-i18n="common.logout"
+                >
+                Поменять язык
+                </button>
+                <div class="loader"></div>
+            </div>
+            </div>
 
-        <p data-i18n="waiting.wait_text">
-          Как только админ запустит игру, здесь появится первый вопрос. Оставайтесь на связи!
-        </p>
+            <!-- 2.1) ОЖИДАНИЕ РЕЗУЛЬТАТОВ -->
+            <div id="state-waiting-results" class="state hidden">
+            <div class="container">
+                <div class="icon">⏳</div>
+                <h1 data-i18n="waiting_results.title">Ожидаем…</h1>
+                <p>
+                <span data-i18n="waiting_results.nickname_label">Ваш никнейм:</span>
+                <strong id="waiting-nickname"></strong>
+                </p>
+                <p data-i18n="waiting_results.text">
+                Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа!
+                </p>
+                <button
+                onclick="showLanguagePicker()"
+                class="btn btn-outline"
+                style="margin-top: 2rem;"
+                data-i18n="common.logout" >
+                Поменять язык
+                </button>
+                <div class="loader"></div>
+            </div>
+            </div>
 
-        <button
-          onclick="showLanguagePicker()"
-          class="btn btn-outline"
-          style="margin-top: 2rem;"
-          data-i18n="common.logout"
-        >
-          Поменять язык
-        </button>
-
-        <div class="loader"></div>
-      </div>
-    </div>
-
-    <!-- 2.1) ОЖИДАНИЕ РЕЗУЛЬТАТОВ -->
-    <div id="state-waiting-results" class="state hidden">
-
-      <div class="container">
-        <div class="icon">⏳</div>
-        <h1 data-i18n="waiting_results.title">Ожидаем…</h1>
-
-        <p>
-          <span data-i18n="waiting_results.nickname_label">Ваш никнейм:</span>
-          <strong id="waiting-nickname"></strong>
-        </p>
-
-        <p data-i18n="waiting_results.text">
-          Как только игра завершится, произойдёт подсчёт очков и объявление результатов этого этапа!
-        </p>
-
-        <button
-          onclick="showLanguagePicker()"
-          class="btn btn-outline"
-          style="margin-top: 2rem;"
-          data-i18n="common.logout"
-        >
-          Поменять язык
-        </button>
-
-        <div class="loader"></div>
-      </div>
-    </div>
-
-    <!-- 3) ИГРА — ОТКРЫТЫЕ ОТВЕТЫ -->
-    <div id="state-game-open" class="state hidden">
-      <div class="container">
-        <!-- Шапка вопроса -->
-        <div class="question-header">     
-          <div class="quiz-title" id="quiz-title"></div>
-          <div class="qh-row">
-            <div class="timer-badge panel">
-            <div id="question-timer" class="timer">00:25</div>
-          </div>
-
-          <div id="question-progress" data-i18n="game.question_of">
-            Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span>
-          </div>
-          </div>
-          
-        </div>
-
-        <!-- Прогресс-бар -->
-        <div class="progress-container">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
-          </div>
-        </div>
-
-        <!-- Текст вопроса -->
-        <div class="question-block panel question-card">
-          <h2 id="question-text" data-i18n="game.loading_question">Текст текущего вопроса загружается...</h2>
-        </div>
-
-        <div class="hr-soft"></div>
-
-        <!-- Ответ -->
-        <div class="answer-block panel answer-card">
-          <textarea
-            id="answer-textarea"
-            rows="5"
-            placeholder="Введите ваш развернутый ответ здесь..."
-            data-i18n-placeholder="game.answer_ph"
-          ></textarea>
-
-          <div class="actions">
-            <button id="submit-answer-btn" disabled data-i18n="game.submit">
-              Отправить ответ
-            </button>
-            <div id="answer-status"></div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- 3.1) ИГРА — ВАРИАНТЫ ОТВЕТОВ -->
-    <div id="state-game" class="state hidden">
-      <div class="container">
-        <!-- Шапка вопроса -->
-        <div class="question-header">
+            <!-- 3) ИГРА — ОТКРЫТЫЕ ОТВЕТЫ -->
+            <div id="state-game-open" class="state hidden">
+            <div class="container">
+                <div class="question-header">     
+                <div class="quiz-title" id="quiz-title"></div>
+                <div class="qh-row">
+                    <div class="timer-badge panel">
+                    <div id="question-timer" class="timer">00:25</div>
+                </div>
+                <div id="question-progress" data-i18n="game.question_of">
+                    Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span>
+                </div>
+                </div>
+                </div>
+                <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                </div>
+                <div class="question-block panel question-card">
+                <h2 id="question-text" data-i18n="game.loading_question">Текст текущего вопроса загружается...</h2>
+                </div>
+                <div class="hr-soft"></div>
+                <div class="answer-block panel answer-card">
+                <textarea
+                    id="answer-textarea"
+                    rows="5"
+                    placeholder="Введите ваш развернутый ответ здесь..."
+                    data-i18n-placeholder="game.answer_ph"></textarea>
+                <div class="actions">
+                    <button id="submit-answer-btn" disabled data-i18n="game.submit">
+                    Отправить ответ
+                    </button>
+                    <div id="answer-status"></div>
+                </div>
+                </div>
+            </div>
+            </div>
             
-        <div class="quiz-title" id="quiz-title"></div>
-        <div class="qh-row">
-            <div class="timer-badge panel">
-                <div id="question-timer" class="timer">00:25</div>
+            <!-- 3.1) ИГРА — ВАРИАНТЫ ОТВЕТОВ -->
+            <div id="state-game" class="state hidden">
+            <div class="container">
+                <div class="question-header">
+                    
+                <div class="quiz-title" id="quiz-title"></div>
+                <div class="qh-row">
+                    <div class="timer-badge panel">
+                        <div id="question-timer" class="timer">00:25</div>
+                    </div>
+                    <div id="question-progress" data-i18n="game.question_of">
+                        Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span>
+                    </div>
+                    </div>
+                </div>
+                <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                </div>
+                <div class="question-block panel question-card">
+                <h2 id="question-text" data-i18n="game.loading_question">Текст текущего вопроса загружается...</h2>
+                </div>
+                <div id="options" class="answers-grid"></div>
             </div>
-            <div id="question-progress" data-i18n="game.question_of">
-                Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span>
+            </div>
+
+            <!-- 3.2) ИГРА — ВАРИАНТЫ ОТВЕТОВ С КАРТИНКОЙ -->
+            <div id="state-game-image" class="state hidden">
+                <div class="container">
+                    <div class="question-header"> 
+                        <div class="quiz-title" id="quiz-title"></div>
+                        <div class="qh-row">
+                            <div class="timer-badge panel">
+                                <div id="question-timer" class="timer">00:25</div>
+                            </div>
+                            <div id="question-progress" data-i18n="game.question_of">
+                                Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+                    <div class="question-block panel question-card">
+                        <h2 id="question-text">Угадай, которая из картинок сгенерирована при помощи искусственного интеллекта.</h2>
+                    </div>
+                    <div class="single-image-container">
+                    </div>
+                    <div id="options" class="answers-grid">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4) МЕЖДУ ВОПРОСАМИ -->
+            <div id="state-between" class="state hidden">
+            <div class="container">
+                <div class="icon">✔</div>
+                <h2 data-i18n="between.title">Ответ принят!</h2>
+                <p data-i18n="between.next_in">
+                Следующий вопрос появится через <span id="between-timer">5</span> секунд...
+                </p>
+                <p data-i18n="between.stay_tuned">
+                Оставайтесь с нами! Вы стали на шаг ближе к победе...
+                </p>
             </div>
             </div>
+
+            <!-- 5) ФИНИШ -->
+            <div id="state-finished" class="state hidden">
+            <div class="container">
+                <div class="icon">🏁</div>
+                <h1 data-i18n="finished.title">Игра завершена!</h1>
+                <p data-i18n="finished.thanks">
+                Спасибо за ваши ответы и участие!
+                </p>
+                <p data-i18n="finished.processing">
+                Сейчас наш ИИ-ассистент анализирует результаты. Итоги и список победителей будут опубликованы здесь позже.
+                </p>
+            </div>
+            </div>
+
+            <!-- 6) ПОБЕДИТЕЛЬ -->
+            <div id="state-winner" class="state hidden">
+                <div class="container">
+                    <div class="icon">🏆</div>
+                    <h1 data-i18n="winner.title">Поздравляем!</h1>
+                    <p data-i18n="winner.text">
+                    Ваши ответы были одними из самых лучших! Вы вошли в число победителей!
+                    </p>
+                    <div class="prize-info">
+                        <h3 data-i18n="winner.prize_title">Ваш приз:</h3>
+                        <p data-i18n="winner.prize_text">
+                            Подойдите к стойке организаторов на первом этаже и назовите свой никнейм
+                            <strong id="winner-nickname"></strong> для получения заслуженной награды.
+                        </p>
+                    </div>
+                    <p data-i18n="winner.thanks_again">Еще раз спасибо за участие!</p>
+                </div>
+            </div>
+
+            <!-- 7) ВИДЕО КОНЕЦ ВИКТОРИНЫ -->
+            <div id="countdown-overlay" class="hidden">
+                <video
+                    id="countdown-video"
+                    src="./gamecount.mp4"
+                    preload="auto"
+                    playsinline
+                    webkit-playsinline
+                    muted
+                ></video>
+            </div>
         </div>
 
-        <!-- Прогресс-бар -->
-        <div class="progress-container">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
-          </div>
-        </div>
-
-        <!-- Текст вопроса -->
-        <div class="question-block panel question-card">
-          <h2 id="question-text" data-i18n="game.loading_question">Текст текущего вопроса загружается...</h2>
-        </div>
-
-        <!-- Варианты -->
-        <div id="options" class="answers-grid"></div>
-      </div>
-    </div>
-
-    <!-- 3.2) ИГРА — ВАРИАНТЫ ОТВЕТОВ С КАРТИНКОЙ -->
-    <div id="state-game-image" class="state hidden">
-    <div class="container">
-        <div class="question-header">
-            
-        <div class="quiz-title" id="quiz-title"></div>
-        <div class="qh-row">
-            <div class="timer-badge panel">
-            <div id="question-timer" class="timer">00:25</div>
-        </div>
-
-        <div id="question-progress" data-i18n="game.question_of">
-            Вопрос <span id="current-q">1</span>/<span id="total-qs">5</span>
-        </div>
-        
-        </div>
-        
-    </div>
-
-        <!-- Прогресс-бар -->
-        <div class="progress-container">
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
-        </div>
-        </div>
-
-        <!-- Текст вопроса -->
-        <div class="question-block panel question-card">
-        <h2 id="question-text">Угадай, которая из картинок сгенерирована при помощи искусственного интеллекта.</h2>
-        </div>
-
-        <!-- Одна большая картинка -->
-        <div class="single-image-container">
-        <img src="./picture.jpg" alt="Варианты картинок A, B, C, D" class="collage-image">
-        </div>
-
-        <!-- Варианты ответов -->
-        <div id="options" class="answers-grid"></div>
-    </div>
-    </div>
-
-    <!-- 4) МЕЖДУ ВОПРОСАМИ -->
-    <div id="state-between" class="state hidden">
-      <div class="container">
-        <div class="icon">✔</div>
-        <h2 data-i18n="between.title">Ответ принят!</h2>
-
-        <p data-i18n="between.next_in">
-          Следующий вопрос появится через <span id="between-timer">5</span> секунд...
-        </p>
-
-        <p data-i18n="between.stay_tuned">
-          Оставайтесь с нами! Вы стали на шаг ближе к победе...
-        </p>
-      </div>
-    </div>
-
-    <!-- 5) ФИНИШ -->
-    <div id="state-finished" class="state hidden">
-      <div class="container">
-        <div class="icon">🏁</div>
-
-        <h1 data-i18n="finished.title">Игра завершена!</h1>
-
-        <p data-i18n="finished.thanks">
-          Спасибо за ваши ответы и участие!
-        </p>
-
-        <p data-i18n="finished.processing">
-          Сейчас наш ИИ-ассистент анализирует результаты. Итоги и список победителей будут опубликованы здесь позже.
-        </p>
-      </div>
-    </div>
-
-    <!-- 6) ПОБЕДИТЕЛЬ -->
-    <div id="state-winner" class="state hidden">
-      <div class="container">
-        <div class="icon">🏆</div>
-
-        <h1 data-i18n="winner.title">Поздравляем!</h1>
-        <p data-i18n="winner.text">
-          Ваши ответы были одними из самых лучших! Вы вошли в число победителей!
-        </p>
-
-        <div class="prize-info">
-          <h3 data-i18n="winner.prize_title">Ваш приз:</h3>
-          <p data-i18n="winner.prize_text">
-            Подойдите к стойке организаторов на первом этаже и назовите свой никнейм
-            <strong id="winner-nickname"></strong> для получения заслуженной награды.
-          </p>
-        </div>
-
-        <p data-i18n="winner.thanks_again">Еще раз спасибо за участие!</p>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Fullscreen countdown video overlay -->
-    <div id="countdown-overlay" class="hidden">
-    <video
-        id="countdown-video"
-        src="./gamecount.mp4"
-        preload="auto"
-        playsinline
-        webkit-playsinline
-        muted
-    ></video>
-    </div>
-<div id="anti-screenshot-overlay" aria-hidden="true"></div>
-
-
-  <!-- где-нибудь внутри <body>, можно в самом низу -->
-  <audio id="sfx-bg"      src="./sfx/background.mp3"      preload="auto" loop></audio>
-  <audio id="sfx-correct" src="./sfx/correct.mp3" preload="auto"></audio>
-  <audio id="sfx-wrong"   src="./sfx/wrong.mp3"   preload="auto"></audio>
-  <script src="api-client.js"></script>
-  <script src="script.js"></script>
-</body>
+        <audio id="sfx-bg"      src="./sfx/background.mp3"      preload="auto" loop></audio>
+        <audio id="sfx-correct" src="./sfx/correct.mp3" preload="auto"></audio>
+        <audio id="sfx-wrong"   src="./sfx/wrong.mp3"   preload="auto"></audio>
+        <script src="api-client.js"></script>
+        <script src="script.js"></script>
+    </body>
 </html>

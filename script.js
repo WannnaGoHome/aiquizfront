@@ -171,7 +171,7 @@ function setRegistrationViewMode(mode) {
     nameFields.classList.add('hidden');
     langSelect.classList.remove('hidden');
     toggleNameFields(false);
-    registrationForm.noValidate = true;     // отключаем HTML5-валидацию
+    registrationForm.noValidate = true;  
     setJoinButtonMode('langOnly');
   } else {
     nameFields.classList.remove('hidden');
@@ -190,24 +190,19 @@ const t = (keyPath, lang) => {
 function applyTranslations(root = document) {
   const lang = appState.lang || 'ru';
 
-  // data-i18n (innerHTML)
   root.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const val = t(key, lang);
     if (val) el.innerHTML = val;
   });
 
-  // data-i18n-placeholder
   root.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
     const val = t(key, lang);
     if (val) el.setAttribute('placeholder', val);
   });
 
-  // Заголовок страницы — всегда просто выставляем
   document.title = t('app.title', lang);
-
-  // Строка "Вопрос X/Y" — строим заново на текущем экране
   updateQuestionProgressLabel();
 
   const imageQuestionText = document.querySelector('#state-game-image #question-text');
@@ -225,7 +220,6 @@ function readQuizMark(key) {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : {};
   } catch (_) {
-    // если вдруг был битый JSON — зачистим и вернём пусто
     localStorage.removeItem(key);
     return {};
   }
@@ -285,7 +279,6 @@ function toggleNameFields(enabled) {
 
 function setJoinButtonMode(mode) {
   if (mode === 'langOnly') {
-    // кнопка НЕ сабмитит форму, просто сохраняет язык и переводит на waiting
     joinBtn.type = 'button';
     joinBtn.onclick = async () => {
       const lang = (new FormData(registrationForm).get('lang') || 'ru').toLowerCase();
@@ -293,18 +286,15 @@ function setJoinButtonMode(mode) {
       localStorage.setItem('lang', lang);
       syncHtmlLang();
       applyTranslations(document);
-      // если пользователь уже авторизован — просто уходим на ожидание
       if (appState.userId) {
         showState('waiting');
         startPolling();
         checkAndStartGame().catch(console.error);
       } else {
-        // если вдруг не залогинен — покажем поля
         setRegistrationViewMode('full');
       }
     };
   } else {
-    // обычный submit
     joinBtn.type = 'submit';
     joinBtn.onclick = null;
   }
@@ -318,7 +308,6 @@ document.addEventListener('change', (e) => {
     applyTranslations(document);
 
     if (appState.userId) {
-      // У пользователя есть аккаунт — оставляем только язык
       setRegistrationViewMode('langOnly');
     }
   }
@@ -358,21 +347,6 @@ registrationForm.addEventListener("submit", async (e) => {
     registrationError.classList.remove("hidden");
   }
 });
-//   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
-
-//   const el = document.getElementById(`state-${state}`);
-//   if (el) el.classList.remove("hidden");
-
-//   const nicknameElements = el?.querySelectorAll("[id$='nickname']") || [];
-//   nicknameElements.forEach(elm => { elm.textContent = appState.userNickname; });
-
-//   appState.currentState = state;
-
-//   // Применяем перевод к новому экрану
-//   applyTranslations(el);
-// }
-
-// ==== Вспомогательные ====
 
 function showState(state) {
   document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
@@ -408,7 +382,7 @@ async function finishGamePhase() {
     if (questions.length > 0) {
       const quizId = questions[0]?.quiz_id;
       if (quizId) {
-        const key = quizKey(event_id, quizId); // 👈 event_id
+        const key = quizKey(event_id, quizId); 
         localStorage.setItem(key, JSON.stringify({ completed: true }));
       }
     }
@@ -496,7 +470,6 @@ async function checkAndStartGame() {
           return;
         }
 
-        // Определяем начальный экран по типу первого вопроса
         const firstType = questions[0]?.type;
         if (firstType === "image") {
           showState("game-image");
@@ -526,14 +499,11 @@ async function checkAndStartGame() {
   }
 }
 
-
-
 function qOptions(q) {
   const pref = appState.lang || 'ru';
-  // поддержка обоих форматов: options_i18n.{ru|en|kk} ИЛИ options.{ru|en|kk} ИЛИ options:[]
   const i18n = q?.options_i18n || q?.options;
 
-  if (Array.isArray(i18n)) return i18n;                // уже массив
+  if (Array.isArray(i18n)) return i18n;             
   if (i18n && Array.isArray(i18n[pref])) return i18n[pref];
   if (i18n && Array.isArray(i18n.ru))   return i18n.ru;
   if (i18n && Array.isArray(i18n.en))   return i18n.en;
@@ -543,12 +513,10 @@ function qOptions(q) {
 
 function qText(q) {
   const pref = appState.lang || 'ru';
-  // поддержка обоих форматов: text_i18n.{ru|en|kk} ИЛИ text:{ru|en|kk} ИЛИ просто text: "..."
   const i18n = q?.text_i18n || q?.text;
   if (typeof i18n === 'string') return i18n;
   return i18n?.[pref] ?? i18n?.ru ?? i18n?.en ?? '';
 }
-
 
 function qCorrect(q) { return []; }
 
@@ -560,7 +528,6 @@ function setQuizTitle(quiz) {
 document.addEventListener('copy', e => e.preventDefault());
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', e => {
-  // например Ctrl+C, Ctrl+S, Ctrl+P
   if (e.ctrlKey && ['c','s','p'].includes(e.key.toLowerCase())) {
     e.preventDefault();
   }
@@ -612,7 +579,7 @@ async function handleOptionClick(index) {
   });
   selectedBtn?.classList.add("selected");
 
-  let res; // 👈 вынесли наверх
+  let res; 
   try {
     res = await ApiClient.sendAnswer(telegramId, q.id, q.quiz_id ?? 1, [chosen], currentLang);
     console.log("✅ Ответ отправлен:", res);
@@ -622,7 +589,6 @@ async function handleOptionClick(index) {
     selectedBtn?.classList.add(isCorrect ? "correct" : "incorrect");
     playSfx(isCorrect ? "correct" : "wrong", isCorrect ? 1 : 0.9);
 
-    // ✅ проверяем завершение ВНУТРИ try
     if (res?.isCompleted) {
       console.log("🎬 Викторина завершена сервером");
       await playEndQuizVideo();
@@ -762,11 +728,6 @@ function nextQuestion() {
   }
 }
 
-
-// Функция для рендеринга вопроса с одной картинкой
-// Если нет — раскомментируйте и укажите свой бэкенд
-// const API_BASE_URL = "https://<ваш-бэкенд>";
-
 const API_BASE_URL = "https://ai-bot-backend-ghm4.onrender.com";
 
 function renderImageQuestion(q) {
@@ -774,11 +735,9 @@ function renderImageQuestion(q) {
   const optionsContainer = qs("options");
   if (!container || !optionsContainer) return;
 
-  // очищаем содержимое
   container.innerHTML = "";
   optionsContainer.innerHTML = "";
 
-  // достаем первую картинку из массива
   const imageUrl = Array.isArray(q.images_urls) && q.images_urls.length > 0
     ? q.images_urls[0]
     : null;
@@ -791,7 +750,6 @@ function renderImageQuestion(q) {
     container.appendChild(img);
   }
 
-  // рендерим варианты ответов
   const options = qOptions(q);
   options.forEach((opt, i) => {
     const btn = document.createElement("div");
@@ -802,16 +760,14 @@ function renderImageQuestion(q) {
     optionsContainer.appendChild(btn);
   });
 }
-// Показываем выбор языка без разлогина
+
 function showLanguagePicker() {
   stopPolling();
-  // ВАЖНО: НЕ обнуляем appState.userId, чтобы пользователь оставался "зарегистрирован"
   stopBg();
   setRegistrationViewMode('langOnly');
   showState('registration');
 }
 
-// Если прям нужен настоящий логаут — оставь отдельную функцию:
 function logoutHard() {
   stopPolling();   
   appState.userId = null;
@@ -851,7 +807,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       appState.userNickname = userData.nickname;
       appState.points = userData.points;
 
-      // Показываем только выбор языка
       setRegistrationViewMode('langOnly');
 
       primeAudio();
@@ -883,7 +838,6 @@ let audioPrimed = false;
 function primeAudio() {
   if (audioPrimed) return;
   audioPrimed = true;
-  // одноразово пытаемся запустить и тут же остановить
   const a = SFX.correct;
   a.volume = 0;
   a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(()=>{});
@@ -905,10 +859,10 @@ function startBg(vol = 0.2) {
   const bg = SFX.bg;
   if (!bg) return;
   bg.volume = vol;
-  // если уже играет, повторно не запускаем
   if (!bg.paused) return;
   bg.play().catch(()=>{});
 }
+
 function stopBg() {
   const bg = SFX.bg;
   if (!bg) return;
@@ -921,7 +875,6 @@ document.addEventListener('visibilitychange', () => {
   else if (appState.currentState === 'game' || appState.currentState === 'game-open') startBg();
 });
 
-// Флаг: какие квизы уже показывали отсчёт
 const countdownPlayedForQuiz = new Set();
 
 function playCountdownVideoOncePerQuiz(quizId) {
@@ -938,24 +891,17 @@ function playCountdownVideoOncePerQuiz(quizId) {
       return;
     }
 
-    // На время видео — приглушаем фон
     const wasBgPlaying = !SFX.bg?.paused;
     stopBg();
-
-    // Показали оверлей
     overlay.classList.remove('hidden');
-
-    // Гарантируем старт (на некоторых девайсах нужен reset currentTime)
     video.currentTime = 0;
 
-    // Автовоспроизведение разрешено т.к. muted
     const onFinish = () => {
       video.removeEventListener('ended', onFinish);
       video.removeEventListener('error', onFinish);
       overlay.classList.add('hidden');
       countdownPlayedForQuiz.add(quizId);
 
-      // Вернём фон если он был включён
       if (wasBgPlaying) startBg(0.18);
 
       resolve(true);
@@ -964,9 +910,7 @@ function playCountdownVideoOncePerQuiz(quizId) {
     video.addEventListener('ended', onFinish);
     video.addEventListener('error', onFinish);
 
-    // Стартуем
     video.play().catch(() => {
-      // Если не получилось автоплеем — просто скрываем и продолжаем
       onFinish();
     });
   });
@@ -1002,7 +946,6 @@ async function playEndQuizVideo() {
       overlay.appendChild(video);
     }
 
-    // Останавливаем фон
     const wasBgPlaying = !SFX.bg?.paused;
     stopBg();
     overlay.classList.remove("hidden");
@@ -1025,8 +968,6 @@ async function playEndQuizVideo() {
   });
 }
 
-
-// ===== Anti-screenshot blur =====
 (function setupAntiScreenshot() {
   const overlayId = 'anti-screenshot-overlay';
   let overlay = document.getElementById(overlayId);
@@ -1037,8 +978,8 @@ async function playEndQuizVideo() {
   }
 
   let blurTimer = null;
-  const BLUR_ON_MS  = 0;     // без задержки включаем
-  const BLUR_OFF_MS = 120;   // маленькая задержка на снятие — меньше мерцания
+  const BLUR_ON_MS  = 0;   
+  const BLUR_OFF_MS = 120;   
 
   const setBlur = (on) => {
     clearTimeout(blurTimer);
@@ -1048,19 +989,13 @@ async function playEndQuizVideo() {
     }, on ? BLUR_ON_MS : BLUR_OFF_MS);
   };
 
-  // Потеря фокуса/видимости — включаем
   window.addEventListener('blur', () => setBlur(true));
   document.addEventListener('visibilitychange', () => {
     setBlur(document.hidden);
   });
 
-  // Возврат фокуса — выключаем
   window.addEventListener('focus', () => setBlur(false));
-
-  // На мобильных иногда срабатывает при сворачивании
   window.addEventListener('pageshow', () => setBlur(false));
   window.addEventListener('pagehide', () => setBlur(true));
-
-  // На старте — вдруг вкладка уже не активна
   setBlur(document.hidden || !document.hasFocus());
 })();
